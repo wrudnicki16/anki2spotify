@@ -1,0 +1,106 @@
+import { useState } from 'react';
+import * as WebBrowser from 'expo-web-browser';
+import * as Crypto from 'expo-crypto';
+import { makeRedirectUri } from 'expo-auth-session';
+import { SPOTIFY_CLIENT_ID, SPOTIFY_SCOPES } from '../config/spotify';
+
+function base64URLEncode(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+  for (let i = 0; i < bytes.length; i++) {
+    str += String.fromCharCode(bytes[i]);
+  }
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+export function useSpotifyAuth() {
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+
+  const redirectUri = makeRedirectUri();
+
+  const login = async () => {
+    // Generate PKCE code verifier and challenge
+    const randomBytes = await Crypto.getRandomBytesAsync(32);
+    const codeVerifier = base64URLEncode(randomBytes.buffer);
+    const digest = await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      codeVerifier,
+      { encoding: Crypto.CryptoEncoding.BASE64 },
+    );
+    const codeChallenge = digest.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    const params = new URLSearchParams({
+      client_id: SPOTIFY_CLIENT_ID,
+      response_type: 'code',
+      redirect_uri: redirectUri,
+      scope: SPOTIFY_SCOPES.join(' '),
+      show_dialog: 'true',
+      code_challenge_method: 'S256',
+      code_challenge: codeChallenge,
+    });
+    const authUrl = `https://accounts.spotify.com/authorize?${params.toString()}`;
+
+    console.log('[SpotifyAuth] Redirect URI:', redirectUri);
+    console.log('[SpotifyAuth] Opening auth URL...');
+
+    const result = await WebBrowser.openAuthSessionAsync(
+      authUrl,
+      redirectUri,
+      { showInRecents: false },
+    );
+
+    console.log('[SpotifyAuth] Browser result:', JSON.stringify(result, null, 2));
+
+    if (result.type === 'success' && result.url) {
+      const url = new URL(result.url);
+      const code = url.searchParams.get('code');
+      const error = url.searchParams.get('error');
+
+      if (error) {
+        console.log('[SpotifyAuth] Auth error:', error);
+        return;
+      }
+
+      if (code) {
+        console.log('[SpotifyAuth] Got auth code, exchanging for token...');
+        try {
+          const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              client_id: SPOTIFY_CLIENT_ID,
+              grant_type: 'authorization_code',
+              code,
+              redirect_uri: redirectUri,
+              code_verifier: codeVerifier,
+            }).toString(),
+          });
+
+          const tokenData = await tokenResponse.json();
+          console.log('[SpotifyAuth] Token response status:', tokenResponse.status);
+          console.log('[SpotifyAuth] Token response body:', JSON.stringify(tokenData));
+
+          if (tokenData.access_token) {
+            console.log('[SpotifyAuth] Token received, expires in', tokenData.expires_in, 's');
+            setAccessToken(tokenData.access_token);
+            setExpiresAt(Date.now() + tokenData.expires_in * 1000);
+          } else {
+            console.log('[SpotifyAuth] Token error:', JSON.stringify(tokenData));
+          }
+        } catch (err) {
+          console.log('[SpotifyAuth] Token exchange fetch error:', String(err));
+        }
+      }
+    }
+  };
+
+  const isTokenValid = accessToken && expiresAt && Date.now() < expiresAt;
+
+  const logout = () => {
+    setAccessToken(null);
+    setExpiresAt(null);
+  };
+
+  return { accessToken, isAuthenticated: !!isTokenValid, login, logout, isReady: true };
+}

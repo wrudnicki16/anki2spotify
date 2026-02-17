@@ -1,0 +1,333 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
+import { insertDeck, insertCards, getAllDecks, deleteDeck } from '../db/database';
+
+interface ParsedCard {
+  front: string;
+  back: string;
+  tags: string;
+}
+
+interface DeckRow {
+  id: number;
+  name: string;
+  imported_at: string;
+  card_count: number;
+  search_field: string | null;
+}
+
+function parseCSV(text: string): ParsedCard[] {
+  const lines = text.trim().split('\n');
+  if (lines.length === 0) return [];
+
+  // Filter out Anki metadata directives (lines starting with #)
+  const dataLines = lines.filter((l) => !l.trimStart().startsWith('#'));
+  if (dataLines.length === 0) return [];
+
+  // Detect separator (tab or comma)
+  const sep = dataLines[0].includes('\t') ? '\t' : ',';
+  const cards: ParsedCard[] = [];
+
+  // Check if first line is a header
+  const firstLine = dataLines[0].toLowerCase();
+  const startIdx =
+    firstLine.includes('front') || firstLine.includes('back') ? 1 : 0;
+
+  for (let i = startIdx; i < dataLines.length; i++) {
+    const line = dataLines[i].trim();
+    if (!line) continue;
+
+    const parts = line.split(sep);
+    cards.push({
+      front: (parts[0] ?? '').trim().replace(/^"|"$/g, ''),
+      back: (parts[1] ?? '').trim().replace(/^"|"$/g, ''),
+      tags: (parts[2] ?? '').trim().replace(/^"|"$/g, ''),
+    });
+  }
+
+  return cards;
+}
+
+export default function DeckImportScreen({ navigation }: any) {
+  const [preview, setPreview] = useState<ParsedCard[]>([]);
+  const [fileName, setFileName] = useState('');
+  const [decks, setDecks] = useState<DeckRow[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadDecks();
+  }, []);
+
+  const loadDecks = async () => {
+    const d = await getAllDecks();
+    setDecks(d as DeckRow[]);
+  };
+
+  const pickCSV = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['text/csv', 'text/comma-separated-values', 'text/plain', '*/*'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled || !result.assets?.[0]) return;
+
+      const file = result.assets[0];
+      setFileName(file.name);
+
+      const fsFile = new File(file.uri);
+      const content = await fsFile.text();
+      const cards = parseCSV(content);
+      setPreview(cards);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to read file');
+    }
+  };
+
+  const confirmImport = async () => {
+    if (preview.length === 0) return;
+    setLoading(true);
+    try {
+      const deckName = fileName.replace(/\.(csv|txt)$/i, '') || 'Imported Deck';
+      const deckId = await insertDeck(deckName);
+      await insertCards(deckId, preview);
+      setPreview([]);
+      setFileName('');
+      await loadDecks();
+      Alert.alert('Success', `Imported ${preview.length} cards into "${deckName}"`);
+    } catch (err) {
+      Alert.alert('Error', 'Failed to import deck');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteDeck = (deckId: number, name: string) => {
+    Alert.alert('Delete Deck', `Delete "${name}" and all its cards?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteDeck(deckId);
+          await loadDecks();
+        },
+      },
+    ]);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.header}>Anki2Spotify</Text>
+
+      {preview.length === 0 ? (
+        <>
+          <TouchableOpacity style={styles.importButton} onPress={pickCSV}>
+            <Text style={styles.importButtonText}>Import Deck</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.sectionTitle}>Your Decks</Text>
+          {decks.length === 0 ? (
+            <Text style={styles.emptyText}>
+              No decks yet. Import a file to get started.
+            </Text>
+          ) : (
+            <FlatList
+              data={decks}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.deckCard}
+                  onPress={() =>
+                    navigation.navigate('CardQueue', {
+                      deckId: item.id,
+                      deckName: item.name,
+                      searchField: item.search_field ?? 'back',
+                    })
+                  }
+                  onLongPress={() => handleDeleteDeck(item.id, item.name)}
+                >
+                  <Text style={styles.deckName}>{item.name}</Text>
+                  <Text style={styles.deckInfo}>
+                    {item.card_count} cards
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <Text style={styles.sectionTitle}>
+            Preview: {fileName} ({preview.length} cards)
+          </Text>
+          <FlatList
+            data={preview.slice(0, 20)}
+            keyExtractor={(_, i) => i.toString()}
+            renderItem={({ item }) => (
+              <View style={styles.previewCard}>
+                <Text style={styles.previewFront}>{item.front}</Text>
+                <Text style={styles.previewBack}>{item.back}</Text>
+                {item.tags ? (
+                  <Text style={styles.previewTags}>{item.tags}</Text>
+                ) : null}
+              </View>
+            )}
+            ListFooterComponent={
+              preview.length > 20 ? (
+                <Text style={styles.moreText}>
+                  ...and {preview.length - 20} more cards
+                </Text>
+              ) : null
+            }
+          />
+          <View style={styles.previewActions}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                setPreview([]);
+                setFileName('');
+              }}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.confirmButton, loading && styles.disabled]}
+              onPress={confirmImport}
+              disabled={loading}
+            >
+              <Text style={styles.confirmText}>
+                {loading ? 'Importing...' : 'Confirm Import'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#121212',
+    padding: 16,
+  },
+  header: {
+    color: '#1DB954',
+    fontSize: 28,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: 24,
+    marginTop: 8,
+  },
+  importButton: {
+    backgroundColor: '#1DB954',
+    padding: 16,
+    borderRadius: 30,
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  importButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  sectionTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  emptyText: {
+    color: '#727272',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 40,
+  },
+  deckCard: {
+    backgroundColor: '#1e1e1e',
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  deckName: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    flex: 1,
+  },
+  deckInfo: {
+    color: '#b3b3b3',
+    fontSize: 14,
+  },
+  previewCard: {
+    backgroundColor: '#1e1e1e',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 6,
+  },
+  previewFront: {
+    color: '#1DB954',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  previewBack: {
+    color: '#fff',
+    fontSize: 14,
+    marginTop: 4,
+  },
+  previewTags: {
+    color: '#727272',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  moreText: {
+    color: '#727272',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  previewActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+    paddingBottom: 20,
+  },
+  cancelButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 30,
+    backgroundColor: '#535353',
+    alignItems: 'center',
+  },
+  cancelText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  confirmButton: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 30,
+    backgroundColor: '#1DB954',
+    alignItems: 'center',
+  },
+  confirmText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  disabled: {
+    opacity: 0.5,
+  },
+});

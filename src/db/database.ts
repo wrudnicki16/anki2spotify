@@ -1,0 +1,208 @@
+import * as SQLite from 'expo-sqlite';
+
+let db: SQLite.SQLiteDatabase;
+
+export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
+  if (!db) {
+    db = await SQLite.openDatabaseAsync('anki2spotify.db');
+    await initDatabase(db);
+  }
+  return db;
+}
+
+async function initDatabase(database: SQLite.SQLiteDatabase): Promise<void> {
+  await database.execAsync(`
+    PRAGMA journal_mode = WAL;
+
+    CREATE TABLE IF NOT EXISTS decks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      imported_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS cards (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      deck_id INTEGER NOT NULL,
+      front TEXT NOT NULL,
+      back TEXT NOT NULL,
+      tags TEXT DEFAULT '',
+      status TEXT DEFAULT 'pending',
+      FOREIGN KEY (deck_id) REFERENCES decks(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS timestamps (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      card_id INTEGER NOT NULL,
+      track_id TEXT NOT NULL,
+      track_name TEXT NOT NULL,
+      artist_name TEXT NOT NULL,
+      album_art TEXT DEFAULT '',
+      spotify_url TEXT NOT NULL,
+      spotify_uri TEXT NOT NULL,
+      progress_ms INTEGER NOT NULL,
+      note TEXT DEFAULT '',
+      capture_mode TEXT DEFAULT 'manual',
+      captured_at TEXT NOT NULL DEFAULT (datetime('now')),
+      FOREIGN KEY (card_id) REFERENCES cards(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Add search_field column to existing decks tables (safe to fail if already exists)
+  try {
+    await database.execAsync(
+      `ALTER TABLE decks ADD COLUMN search_field TEXT DEFAULT 'back'`
+    );
+  } catch (_) {
+    // Column already exists
+  }
+}
+
+// --- Deck operations ---
+
+export async function insertDeck(name: string): Promise<number> {
+  const database = await getDatabase();
+  const result = await database.runAsync(
+    'INSERT INTO decks (name) VALUES (?)',
+    name
+  );
+  return result.lastInsertRowId;
+}
+
+export async function getAllDecks(): Promise<any[]> {
+  const database = await getDatabase();
+  return database.getAllAsync(`
+    SELECT d.id, d.name, d.imported_at, d.search_field, COUNT(c.id) as card_count
+    FROM decks d
+    LEFT JOIN cards c ON c.deck_id = d.id
+    GROUP BY d.id
+    ORDER BY d.imported_at DESC
+  `);
+}
+
+export async function updateDeckSearchField(
+  deckId: number,
+  field: 'front' | 'back'
+): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync('UPDATE decks SET search_field = ? WHERE id = ?', [
+    field,
+    deckId,
+  ]);
+}
+
+export async function deleteDeck(deckId: number): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM cards WHERE deck_id = ?', deckId);
+  await database.runAsync('DELETE FROM decks WHERE id = ?', deckId);
+}
+
+// --- Card operations ---
+
+export async function insertCards(
+  deckId: number,
+  cards: { front: string; back: string; tags: string }[]
+): Promise<void> {
+  const database = await getDatabase();
+  const stmt = await database.prepareAsync(
+    'INSERT INTO cards (deck_id, front, back, tags) VALUES ($deckId, $front, $back, $tags)'
+  );
+  try {
+    for (const card of cards) {
+      await stmt.executeAsync({
+        $deckId: deckId,
+        $front: card.front,
+        $back: card.back,
+        $tags: card.tags,
+      });
+    }
+  } finally {
+    await stmt.finalizeAsync();
+  }
+}
+
+export async function getCardsByDeck(
+  deckId: number,
+  status?: string
+): Promise<any[]> {
+  const database = await getDatabase();
+  if (status) {
+    return database.getAllAsync(
+      'SELECT * FROM cards WHERE deck_id = ? AND status = ? ORDER BY id',
+      [deckId, status]
+    );
+  }
+  return database.getAllAsync(
+    'SELECT * FROM cards WHERE deck_id = ? ORDER BY id',
+    deckId
+  );
+}
+
+export async function updateCardStatus(
+  cardId: number,
+  status: string
+): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync('UPDATE cards SET status = ? WHERE id = ?', [
+    status,
+    cardId,
+  ]);
+}
+
+// --- Timestamp operations ---
+
+export async function insertTimestamp(ts: {
+  cardId: number;
+  trackId: string;
+  trackName: string;
+  artistName: string;
+  albumArt: string;
+  spotifyUrl: string;
+  spotifyUri: string;
+  progressMs: number;
+  note: string;
+  captureMode: string;
+}): Promise<number> {
+  const database = await getDatabase();
+  const result = await database.runAsync(
+    `INSERT INTO timestamps (card_id, track_id, track_name, artist_name, album_art, spotify_url, spotify_uri, progress_ms, note, capture_mode)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      ts.cardId,
+      ts.trackId,
+      ts.trackName,
+      ts.artistName,
+      ts.albumArt,
+      ts.spotifyUrl,
+      ts.spotifyUri,
+      ts.progressMs,
+      ts.note,
+      ts.captureMode,
+    ]
+  );
+  return result.lastInsertRowId;
+}
+
+export async function getTimestampsByCard(cardId: number): Promise<any[]> {
+  const database = await getDatabase();
+  return database.getAllAsync(
+    'SELECT * FROM timestamps WHERE card_id = ? ORDER BY captured_at DESC',
+    cardId
+  );
+}
+
+export async function getTimestampsByDeck(deckId: number): Promise<any[]> {
+  const database = await getDatabase();
+  return database.getAllAsync(
+    `SELECT t.*, c.front, c.back
+     FROM timestamps t
+     JOIN cards c ON c.id = t.card_id
+     WHERE c.deck_id = ?
+     ORDER BY c.id, t.captured_at`,
+    deckId
+  );
+}
+
+export async function deleteTimestamp(id: number): Promise<void> {
+  const database = await getDatabase();
+  await database.runAsync('DELETE FROM timestamps WHERE id = ?', id);
+}
