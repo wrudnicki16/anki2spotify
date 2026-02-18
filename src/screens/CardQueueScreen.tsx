@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getCardsByDeck, updateDeckSearchField } from '../db/database';
+import { getCardsByDeck, updateDeckSearchField, getTrackForCard } from '../db/database';
 
 interface CardRow {
   id: number;
@@ -166,14 +166,35 @@ export default function CardQueueScreen({ route, navigation }: any) {
           renderItem={({ item }) => (
             <TouchableOpacity
               style={styles.cardItem}
-              onPress={() =>
+              onPress={async () => {
+                if (item.status === 'matched') {
+                  const row = await getTrackForCard(item.id);
+                  if (row) {
+                    navigation.navigate('Capture', {
+                      cardId: item.id,
+                      cardFront: item.front,
+                      cardBack: item.back,
+                      searchField,
+                      track: {
+                        id: row.track_id,
+                        name: row.track_name,
+                        artists: row.artist_name,
+                        albumArt: row.album_art,
+                        spotifyUrl: row.spotify_url,
+                        spotifyUri: row.spotify_uri,
+                        durationMs: 0,
+                      },
+                    });
+                    return;
+                  }
+                }
                 navigation.navigate('SongCandidates', {
                   cardId: item.id,
                   cardFront: item.front,
                   cardBack: item.back,
                   searchField,
-                })
-              }
+                });
+              }}
             >
               <View style={styles.cardContent}>
                 <Text style={styles.cardFront} numberOfLines={1}>

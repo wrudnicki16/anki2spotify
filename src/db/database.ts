@@ -202,6 +202,23 @@ export async function getTimestampsByDeck(deckId: number): Promise<any[]> {
   );
 }
 
+export async function getTrackForCard(cardId: number): Promise<{
+  track_id: string;
+  track_name: string;
+  artist_name: string;
+  album_art: string;
+  spotify_url: string;
+  spotify_uri: string;
+} | null> {
+  const database = await getDatabase();
+  const row = await database.getFirstAsync(
+    `SELECT track_id, track_name, artist_name, album_art, spotify_url, spotify_uri
+     FROM timestamps WHERE card_id = ? ORDER BY captured_at DESC LIMIT 1`,
+    cardId
+  );
+  return row as any ?? null;
+}
+
 export async function deleteTimestamp(id: number): Promise<void> {
   const database = await getDatabase();
   await database.runAsync('DELETE FROM timestamps WHERE id = ?', id);

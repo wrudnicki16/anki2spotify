@@ -55,11 +55,12 @@ export default function CaptureScreen({
   navigation,
   accessToken,
 }: Props) {
-  const { cardId, cardFront, cardBack, track } = route.params as {
+  const { cardId, cardFront, cardBack, track, searchField } = route.params as {
     cardId: number;
     cardFront: string;
     cardBack: string;
     track: TrackParam;
+    searchField?: string;
   };
 
   const { getPlaybackState, playTrack } = useSpotify(accessToken);
@@ -145,11 +146,11 @@ export default function CaptureScreen({
   };
 
   const handleJump = async (ms: number) => {
-    const success = await seekToPosition(ms);
+    const success = await playTrack(track.spotifyUri, ms);
     if (!success) {
       Alert.alert(
         'Cannot Jump',
-        'Seek requires Spotify Premium and an active playback device. Scrub manually to ' +
+        'Playback requires Spotify Premium and an active device. Scrub manually to ' +
           formatMs(ms)
       );
     }
@@ -216,6 +217,22 @@ export default function CaptureScreen({
       >
         <Text style={styles.manualLinkText}>Enter time manually</Text>
       </TouchableOpacity>
+
+      {searchField ? (
+        <TouchableOpacity
+          style={styles.manualLink}
+          onPress={() =>
+            navigation.navigate('SongCandidates', {
+              cardId,
+              cardFront,
+              cardBack,
+              searchField,
+            })
+          }
+        >
+          <Text style={styles.manualLinkText}>Search for different track</Text>
+        </TouchableOpacity>
+      ) : null}
 
       {showManual && (
         <TimestampPicker
