@@ -113,7 +113,27 @@ CardQueueScreen
 
 The original design conversation covered several ideas that aren't yet built. Here's what was discussed and the current status:
 
-### From the original conversation — not yet implemented
+### Must have
+
+**APKG import**
+Anki's native `.apkg` format is a zipped SQLite database + media. Currently only CSV export is supported. APKG support would make the import flow much smoother for most Anki users.
+
+---
+
+### Actively being considered
+
+**Playlist / queue builder**
+Generate a Spotify playlist from all the matched tracks for a deck — so you could review a whole deck's worth of songs in one listening session. Likely requires working around Spotify's rate-limited API.
+
+**Review mode**
+A "Play next match → one-tap capture" flow that steps through unmatched cards sequentially, making bulk capture faster. Convenience feature.
+
+**Confidence scoring and auto-ranking**
+Right now search results are shown in Spotify's default relevance order. A scoring layer that ranks candidates by how likely they are to actually contain the card's phrase (based on title/artist match, genre, etc.) would reduce manual browsing. Or if users want to score by artist popularity or song listens to maximize enjoyment, this could also be useful. Unsure how much we can get from Spotify's API here.
+
+---
+
+### Alternatives considered in the original conversation
 
 **Lyric matching / display**
 The conversation explicitly deferred lyrics to v2. When added, the cleanest options are:
@@ -124,23 +144,11 @@ The conversation explicitly deferred lyrics to v2. When added, the cleanest opti
 **Automatic timestamp detection via forced alignment**
 The most technically interesting path: supply audio + lyrics text, run forced alignment (e.g. Montreal Forced Aligner) server-side, and get word-level timestamps back. Currently the app is entirely client-side; this would require a backend.
 
-**APKG import**
-Anki's native `.apkg` format is a zipped SQLite database + media. Currently only CSV export is supported. APKG support would make the import flow much smoother for most Anki users.
-
-**Playlist / queue builder**
-The conversation mentioned generating a Spotify playlist from all the matched tracks for a deck — so you could review a whole deck's worth of songs in one listening session.
-
-**Review mode**
-A "Play next match → one-tap capture" flow that steps through unmatched cards sequentially, making bulk capture faster.
-
 **YouTube as an alternate source**
 YouTube was discussed as an alternative to Spotify because its `t=` parameter makes true deep-link-to-timestamp easy for any user, and auto-captions give a text source to match against. No YouTube integration is currently built.
 
 **Genius integration (metadata only)**
 Genius was discussed as a useful canonical song index — better at resolving alternate titles, features, and remixes than Spotify search alone. The public Genius API does not return full lyrics cleanly (scraping their HTML is against their ToS), so the intended use would be: Genius search to identify the correct song, then hand off to Spotify for the actual playback workflow.
-
-**Confidence scoring and auto-ranking**
-Right now search results are shown in Spotify's default relevance order. A scoring layer that ranks candidates by how likely they are to actually contain the card's phrase (based on title/artist match, genre, etc.) would reduce manual browsing.
 
 **Re-import to Anki**
 The exported CSV maps directly back to Anki's import format, but a dedicated "Anki-ready export" mode with the timestamp formatted as a note field would make the round-trip seamless.
