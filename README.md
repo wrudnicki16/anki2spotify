@@ -28,7 +28,7 @@ The answer is yes, with some intentional tradeoffs:
 - Browse all cards for a deck; filter by status: **All / Pending / Matched / Skipped**
 - Toggle the Spotify search term between the card **Front** and **Back** (persisted per deck)
 - "Lyrics only" filter hides cards whose search field is fewer than 3 words
-  * Spotify returns only song titles, artists, and album names for 1-2 words.
+  * Spotify returns only song titles, artists, and album matches for 1-2 words.
 - Tapping a **matched** card skips the search screen and goes directly to the Capture screen showing the previously saved track
 - Tapping a **pending** card opens the Song Candidates search
 
