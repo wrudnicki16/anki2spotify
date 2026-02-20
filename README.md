@@ -133,7 +133,7 @@ Right now search results are shown in Spotify's default relevance order. A scori
 
 ---
 
-### Alternatives considered in the original conversation
+### Alternatives originally considered
 
 **Lyric matching / display**
 The conversation explicitly deferred lyrics to v2. When added, the cleanest options are:
