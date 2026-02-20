@@ -123,7 +123,7 @@ Anki's native `.apkg` format is a zipped SQLite database + media. Currently only
 ### Actively being considered
 
 **Playlist / queue builder**
-Generate a Spotify playlist from all the matched tracks for a deck — so you could review a whole deck's worth of songs in one listening session. Likely requires working around Spotify's rate-limited API.
+Generate a Spotify playlist from all the matched tracks for a deck — so you could review a whole deck's worth of songs in one listening session. Could also just use the currently filtered cards list and use the first suggested song - quicker but less precise. Likely requires working around Spotify's rate-limited API.
 
 **Review mode**
 A "Play next match → one-tap capture" flow that steps through unmatched cards sequentially, making bulk capture faster. Convenience feature.
