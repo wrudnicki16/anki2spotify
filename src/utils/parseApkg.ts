@@ -1,4 +1,4 @@
-import * as FileSystem from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
 import * as SQLite from 'expo-sqlite';
 import JSZip from 'jszip';
 
@@ -30,14 +30,14 @@ export function splitFields(flds: string): string[] {
 const TEMP_DB_NAME = 'anki_import_tmp.db';
 
 export async function parseApkg(fileUri: string): Promise<ApkgResult> {
-  const sqliteDir = FileSystem.documentDirectory + 'SQLite/';
-  const tempDbPath = sqliteDir + TEMP_DB_NAME;
+  const sqliteDir = new Directory(Paths.document, 'SQLite');
+  const tempDbFile = new File(sqliteDir, TEMP_DB_NAME);
+  let db: SQLite.SQLiteDatabase | null = null;
 
   try {
     // 1. Read file as base64
-    const base64 = await FileSystem.readAsStringAsync(fileUri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    const apkgFile = new File(fileUri);
+    const base64 = await apkgFile.base64();
 
     // 2. Unzip and find the collection database
     const zip = await JSZip.loadAsync(base64, { base64: true });
@@ -46,13 +46,13 @@ export async function parseApkg(fileUri: string): Promise<ApkgResult> {
 
     // 3. Write SQLite bytes to the app's SQLite directory
     const dbBase64 = await entry.async('base64');
-    await FileSystem.makeDirectoryAsync(sqliteDir, { intermediates: true });
-    await FileSystem.writeAsStringAsync(tempDbPath, dbBase64, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+    if (!sqliteDir.exists) {
+      sqliteDir.create({ intermediates: true });
+    }
+    tempDbFile.write(dbBase64, { encoding: 'base64' });
 
     // 4. Open and query
-    const db = await SQLite.openDatabaseAsync(TEMP_DB_NAME);
+    db = await SQLite.openDatabaseAsync(TEMP_DB_NAME);
 
     const colRow = await db.getFirstAsync<{ decks: string }>('SELECT decks FROM col');
     if (!colRow) throw new Error('Could not read deck information');
@@ -78,6 +78,7 @@ export async function parseApkg(fileUri: string): Promise<ApkgResult> {
     );
 
     await db.closeAsync();
+    db = null;
 
     // 5. Build deck list (only decks that have notes)
     const decks: AnkiDeck[] = Object.values(decksJson)
@@ -101,7 +102,17 @@ export async function parseApkg(fileUri: string): Promise<ApkgResult> {
 
     return { decks, notesByDeck };
   } finally {
-    // Cleanup — silent failure is fine; file is overwritten next import
-    await FileSystem.deleteAsync(tempDbPath, { idempotent: true }).catch(() => {});
+    // Close DB connection if still open (e.g. error after openDatabaseAsync)
+    if (db) {
+      await db.closeAsync().catch(() => {});
+    }
+    // Cleanup temp file — silent failure is fine; file is overwritten next import
+    try {
+      if (tempDbFile.exists) {
+        tempDbFile.delete();
+      }
+    } catch {
+      // Ignore cleanup errors
+    }
   }
 }

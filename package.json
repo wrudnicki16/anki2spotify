@@ -15,6 +15,10 @@
     "moduleFileExtensions": ["ts", "tsx", "js"],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "moduleNameMapper": {
+      "^expo-file-system$": "<rootDir>/src/__mocks__/expo-file-system.ts",
+      "^expo-sqlite$": "<rootDir>/src/__mocks__/expo-sqlite.ts"
     }
   },
   "dependencies": {
