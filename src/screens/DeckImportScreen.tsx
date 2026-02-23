@@ -149,14 +149,32 @@ export default function DeckImportScreen({ navigation }: any) {
     if (preview.length === 0) return;
     setLoading(true);
     try {
-      const deckName = fileName.replace(/\.(csv|txt)$/i, '') || 'Imported Deck';
-      const deckId = await insertDeck(deckName);
-      await insertCards(deckId, preview);
+      if (apkgDeckCards.length > 0) {
+        // APKG import: one deck per Anki deck
+        let totalCards = 0;
+        for (const { deckName, cards } of apkgDeckCards) {
+          const deckId = await insertDeck(deckName);
+          await insertCards(deckId, cards);
+          totalCards += cards.length;
+        }
+        const deckWord = apkgDeckCards.length === 1 ? 'deck' : 'decks';
+        Alert.alert(
+          'Success',
+          `Imported ${totalCards} cards across ${apkgDeckCards.length} ${deckWord}`
+        );
+      } else {
+        // CSV import: existing behavior
+        const deckName =
+          fileName.replace(/\.(csv|txt)$/i, '') || 'Imported Deck';
+        const deckId = await insertDeck(deckName);
+        await insertCards(deckId, preview);
+        Alert.alert('Success', `Imported ${preview.length} cards into "${deckName}"`);
+      }
       setPreview([]);
       setFileName('');
+      setApkgDeckCards([]);
       await loadDecks();
-      Alert.alert('Success', `Imported ${preview.length} cards into "${deckName}"`);
-    } catch (err) {
+    } catch {
       Alert.alert('Error', 'Failed to import deck');
     } finally {
       setLoading(false);
