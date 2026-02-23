@@ -4,8 +4,14 @@ describe('stripHtml', () => {
   it('removes simple tags', () => {
     expect(stripHtml('<b>hello</b>')).toBe('hello');
   });
-  it('removes br tags', () => {
-    expect(stripHtml('line1<br>line2')).toBe('line1line2');
+  it('converts br tags to newlines', () => {
+    expect(stripHtml('line1<br>line2')).toBe('line1\nline2');
+  });
+  it('handles self-closing br tags', () => {
+    expect(stripHtml('line1<br/>line2')).toBe('line1\nline2');
+  });
+  it('handles br tags with space', () => {
+    expect(stripHtml('line1<br />line2')).toBe('line1\nline2');
   });
   it('trims whitespace', () => {
     expect(stripHtml('  <span>word</span>  ')).toBe('word');

@@ -20,7 +20,7 @@ export interface ApkgResult {
 }
 
 export function stripHtml(html: string): string {
-  return html.replace(/<[^>]+>/g, '').trim();
+  return html.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, '').trim();
 }
 
 export function splitFields(flds: string): string[] {
