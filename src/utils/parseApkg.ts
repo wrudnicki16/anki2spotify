@@ -62,13 +62,17 @@ export async function parseApkg(fileUri: string): Promise<ApkgResult> {
       { id: number; name: string }
     >;
 
-    // Note counts per deck (one note may have multiple cards; COUNT DISTINCT nid)
+    // Count notes per deck, consistent with the assignment query below.
+    // A note with cards in multiple decks is assigned to the lowest deck ID.
     const countRows = await db.getAllAsync<{ did: number; note_count: number }>(
-      'SELECT MIN(c.did) as did, COUNT(DISTINCT c.nid) as note_count FROM cards c GROUP BY c.did'
+      `SELECT did, COUNT(*) as note_count FROM (
+        SELECT MIN(c.did) as did FROM notes n JOIN cards c ON c.nid = n.id GROUP BY n.id
+      ) GROUP BY did`
     );
     const countByDeck = new Map(countRows.map((r) => [r.did, r.note_count]));
 
-    // All notes with their deck assignment
+    // All notes with their deck assignment.
+    // A note can have cards in multiple decks; assign to the lowest deck ID.
     const noteRows = await db.getAllAsync<{
       flds: string;
       tags: string;

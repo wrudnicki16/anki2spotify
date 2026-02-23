@@ -10,7 +10,7 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { insertDeck, insertCards, getAllDecks, deleteDeck } from '../db/database';
-import { parseApkg, ApkgResult, AnkiDeck } from '../utils/parseApkg';
+import { parseApkg, ApkgResult } from '../utils/parseApkg';
 
 interface ParsedCard {
   front: string;
