@@ -10,6 +10,7 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { insertDeck, insertCards, getAllDecks, deleteDeck } from '../db/database';
+import { parseApkg, ApkgResult, AnkiDeck } from '../utils/parseApkg';
 
 interface ParsedCard {
   front: string;
@@ -62,6 +63,11 @@ export default function DeckImportScreen({ navigation }: any) {
   const [fileName, setFileName] = useState('');
   const [decks, setDecks] = useState<DeckRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [apkgResult, setApkgResult] = useState<ApkgResult | null>(null);
+  const [selectedDeckIds, setSelectedDeckIds] = useState<number[]>([]);
+  const [apkgDeckCards, setApkgDeckCards] = useState<
+    Array<{ deckName: string; cards: { front: string; back: string; tags: string }[] }>
+  >([]);
 
   useEffect(() => {
     loadDecks();
@@ -72,7 +78,7 @@ export default function DeckImportScreen({ navigation }: any) {
     setDecks(d as DeckRow[]);
   };
 
-  const pickCSV = async () => {
+  const pickFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['text/csv', 'text/comma-separated-values', 'text/plain', '*/*'],
@@ -84,11 +90,28 @@ export default function DeckImportScreen({ navigation }: any) {
       const file = result.assets[0];
       setFileName(file.name);
 
-      const fsFile = new File(file.uri);
-      const content = await fsFile.text();
-      const cards = parseCSV(content);
-      setPreview(cards);
-    } catch (err) {
+      if (file.name.toLowerCase().endsWith('.apkg')) {
+        setLoading(true);
+        try {
+          const parsed = await parseApkg(file.uri);
+          if (parsed.decks.length === 0) {
+            Alert.alert('No cards found', 'No cards found in the selected decks.');
+            return;
+          }
+          setApkgResult(parsed);
+          setSelectedDeckIds(parsed.decks.map((d) => d.id));
+        } catch {
+          Alert.alert('Error', "Could not read this file. Make sure it's a valid .apkg export from Anki.");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        const fsFile = new File(file.uri);
+        const content = await fsFile.text();
+        const cards = parseCSV(content);
+        setPreview(cards);
+      }
+    } catch {
       Alert.alert('Error', 'Failed to read file');
     }
   };
@@ -131,7 +154,7 @@ export default function DeckImportScreen({ navigation }: any) {
 
       {preview.length === 0 ? (
         <>
-          <TouchableOpacity style={styles.importButton} onPress={pickCSV}>
+          <TouchableOpacity style={styles.importButton} onPress={pickFile}>
             <Text style={styles.importButtonText}>Import Deck</Text>
           </TouchableOpacity>
 
@@ -196,6 +219,7 @@ export default function DeckImportScreen({ navigation }: any) {
               onPress={() => {
                 setPreview([]);
                 setFileName('');
+                setApkgDeckCards([]);
               }}
             >
               <Text style={styles.cancelText}>Cancel</Text>
