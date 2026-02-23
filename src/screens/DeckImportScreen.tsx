@@ -116,6 +116,35 @@ export default function DeckImportScreen({ navigation }: any) {
     }
   };
 
+  const toggleDeck = (id: number) => {
+    setSelectedDeckIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const confirmDeckSelection = () => {
+    if (!apkgResult) return;
+    if (selectedDeckIds.length === 0) {
+      Alert.alert('Select at least one deck');
+      return;
+    }
+    const selectedDecks = apkgResult.decks.filter((d) =>
+      selectedDeckIds.includes(d.id)
+    );
+    const deckCards = selectedDecks.map((d) => ({
+      deckName: d.name,
+      cards: apkgResult.notesByDeck[d.id] ?? [],
+    }));
+    const allCards = deckCards.flatMap((d) => d.cards);
+    if (allCards.length === 0) {
+      Alert.alert('No cards found', 'No cards found in the selected decks.');
+      return;
+    }
+    setApkgDeckCards(deckCards);
+    setPreview(allCards);
+    setApkgResult(null);
+  };
+
   const confirmImport = async () => {
     if (preview.length === 0) return;
     setLoading(true);
@@ -152,7 +181,7 @@ export default function DeckImportScreen({ navigation }: any) {
     <View style={styles.container}>
       <Text style={styles.header}>Anki2Spotify</Text>
 
-      {preview.length === 0 ? (
+      {preview.length === 0 && !apkgResult ? (
         <>
           <TouchableOpacity style={styles.importButton} onPress={pickFile}>
             <Text style={styles.importButtonText}>Import Deck</Text>
@@ -187,6 +216,53 @@ export default function DeckImportScreen({ navigation }: any) {
               )}
             />
           )}
+        </>
+      ) : apkgResult ? (
+        <>
+          <Text style={styles.sectionTitle}>
+            Select Decks to Import
+          </Text>
+          <FlatList
+            data={apkgResult.decks}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.deckSelectRow}
+                onPress={() => toggleDeck(item.id)}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    selectedDeckIds.includes(item.id) && styles.checkboxSelected,
+                  ]}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.deckName}>{item.name}</Text>
+                  <Text style={styles.deckInfo}>{item.noteCount} cards</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+          <View style={styles.previewActions}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                setApkgResult(null);
+                setSelectedDeckIds([]);
+                setFileName('');
+              }}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={confirmDeckSelection}
+            >
+              <Text style={styles.confirmText}>
+                Import {selectedDeckIds.length} deck{selectedDeckIds.length !== 1 ? 's' : ''}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </>
       ) : (
         <>
@@ -353,5 +429,26 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.5,
+  },
+  deckSelectRow: {
+    backgroundColor: '#1e1e1e',
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#535353',
+    backgroundColor: 'transparent',
+  },
+  checkboxSelected: {
+    backgroundColor: '#1DB954',
+    borderColor: '#1DB954',
   },
 });
