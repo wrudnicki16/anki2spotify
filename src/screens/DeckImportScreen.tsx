@@ -10,6 +10,7 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import { insertDeck, insertCards, getAllDecks, deleteDeck } from '../db/database';
+import { parseApkg, ApkgResult } from '../utils/parseApkg';
 
 interface ParsedCard {
   front: string;
@@ -62,6 +63,11 @@ export default function DeckImportScreen({ navigation }: any) {
   const [fileName, setFileName] = useState('');
   const [decks, setDecks] = useState<DeckRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [apkgResult, setApkgResult] = useState<ApkgResult | null>(null);
+  const [selectedDeckIds, setSelectedDeckIds] = useState<number[]>([]);
+  const [apkgDeckCards, setApkgDeckCards] = useState<
+    Array<{ deckName: string; cards: { front: string; back: string; tags: string }[] }>
+  >([]);
 
   useEffect(() => {
     loadDecks();
@@ -72,7 +78,7 @@ export default function DeckImportScreen({ navigation }: any) {
     setDecks(d as DeckRow[]);
   };
 
-  const pickCSV = async () => {
+  const pickFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['text/csv', 'text/comma-separated-values', 'text/plain', '*/*'],
@@ -84,27 +90,91 @@ export default function DeckImportScreen({ navigation }: any) {
       const file = result.assets[0];
       setFileName(file.name);
 
-      const fsFile = new File(file.uri);
-      const content = await fsFile.text();
-      const cards = parseCSV(content);
-      setPreview(cards);
-    } catch (err) {
+      if (file.name.toLowerCase().endsWith('.apkg')) {
+        setLoading(true);
+        try {
+          const parsed = await parseApkg(file.uri);
+          if (parsed.decks.length === 0) {
+            Alert.alert('No cards found', 'No cards found in the selected decks.');
+            return;
+          }
+          setApkgResult(parsed);
+          setSelectedDeckIds(parsed.decks.map((d) => d.id));
+        } catch {
+          Alert.alert('Error', "Could not read this file. Make sure it's a valid .apkg export from Anki.");
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        const fsFile = new File(file.uri);
+        const content = await fsFile.text();
+        const cards = parseCSV(content);
+        setPreview(cards);
+      }
+    } catch {
       Alert.alert('Error', 'Failed to read file');
     }
+  };
+
+  const toggleDeck = (id: number) => {
+    setSelectedDeckIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const confirmDeckSelection = () => {
+    if (!apkgResult) return;
+    if (selectedDeckIds.length === 0) {
+      Alert.alert('Select at least one deck');
+      return;
+    }
+    const selectedDecks = apkgResult.decks.filter((d) =>
+      selectedDeckIds.includes(d.id)
+    );
+    const deckCards = selectedDecks.map((d) => ({
+      deckName: d.name,
+      cards: apkgResult.notesByDeck[d.id] ?? [],
+    }));
+    const allCards = deckCards.flatMap((d) => d.cards);
+    if (allCards.length === 0) {
+      Alert.alert('No cards found', 'No cards found in the selected decks.');
+      return;
+    }
+    setApkgDeckCards(deckCards);
+    setPreview(allCards);
+    setApkgResult(null);
   };
 
   const confirmImport = async () => {
     if (preview.length === 0) return;
     setLoading(true);
     try {
-      const deckName = fileName.replace(/\.(csv|txt)$/i, '') || 'Imported Deck';
-      const deckId = await insertDeck(deckName);
-      await insertCards(deckId, preview);
+      if (apkgDeckCards.length > 0) {
+        // APKG import: one deck per Anki deck
+        let totalCards = 0;
+        for (const { deckName, cards } of apkgDeckCards) {
+          const deckId = await insertDeck(deckName);
+          await insertCards(deckId, cards);
+          totalCards += cards.length;
+        }
+        const deckWord = apkgDeckCards.length === 1 ? 'deck' : 'decks';
+        Alert.alert(
+          'Success',
+          `Imported ${totalCards} cards across ${apkgDeckCards.length} ${deckWord}`
+        );
+      } else {
+        // CSV import: existing behavior
+        const deckName =
+          fileName.replace(/\.(csv|txt)$/i, '') || 'Imported Deck';
+        const deckId = await insertDeck(deckName);
+        await insertCards(deckId, preview);
+        Alert.alert('Success', `Imported ${preview.length} cards into "${deckName}"`);
+      }
       setPreview([]);
       setFileName('');
+      setApkgDeckCards([]);
       await loadDecks();
-      Alert.alert('Success', `Imported ${preview.length} cards into "${deckName}"`);
-    } catch (err) {
+    } catch {
       Alert.alert('Error', 'Failed to import deck');
     } finally {
       setLoading(false);
@@ -129,9 +199,9 @@ export default function DeckImportScreen({ navigation }: any) {
     <View style={styles.container}>
       <Text style={styles.header}>Anki2Spotify</Text>
 
-      {preview.length === 0 ? (
+      {preview.length === 0 && !apkgResult ? (
         <>
-          <TouchableOpacity style={styles.importButton} onPress={pickCSV}>
+          <TouchableOpacity style={styles.importButton} onPress={pickFile}>
             <Text style={styles.importButtonText}>Import Deck</Text>
           </TouchableOpacity>
 
@@ -165,6 +235,53 @@ export default function DeckImportScreen({ navigation }: any) {
             />
           )}
         </>
+      ) : apkgResult ? (
+        <>
+          <Text style={styles.sectionTitle}>
+            Select Decks to Import
+          </Text>
+          <FlatList
+            data={apkgResult.decks}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.deckSelectRow}
+                onPress={() => toggleDeck(item.id)}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    selectedDeckIds.includes(item.id) && styles.checkboxSelected,
+                  ]}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.deckName}>{item.name}</Text>
+                  <Text style={styles.deckInfo}>{item.noteCount} cards</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+          <View style={styles.previewActions}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => {
+                setApkgResult(null);
+                setSelectedDeckIds([]);
+                setFileName('');
+              }}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={confirmDeckSelection}
+            >
+              <Text style={styles.confirmText}>
+                Import {selectedDeckIds.length} deck{selectedDeckIds.length !== 1 ? 's' : ''}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </>
       ) : (
         <>
           <Text style={styles.sectionTitle}>
@@ -196,6 +313,7 @@ export default function DeckImportScreen({ navigation }: any) {
               onPress={() => {
                 setPreview([]);
                 setFileName('');
+                setApkgDeckCards([]);
               }}
             >
               <Text style={styles.cancelText}>Cancel</Text>
@@ -329,5 +447,26 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.5,
+  },
+  deckSelectRow: {
+    backgroundColor: '#1e1e1e',
+    padding: 14,
+    borderRadius: 10,
+    marginBottom: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#535353',
+    backgroundColor: 'transparent',
+  },
+  checkboxSelected: {
+    backgroundColor: '#1DB954',
+    borderColor: '#1DB954',
   },
 });
