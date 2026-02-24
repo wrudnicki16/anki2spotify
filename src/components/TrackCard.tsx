@@ -12,9 +12,10 @@ import { SpotifyTrack } from '../types';
 interface Props {
   track: SpotifyTrack;
   onSelect?: (track: SpotifyTrack) => void;
+  clipCount?: number;
 }
 
-export default function TrackCard({ track, onSelect }: Props) {
+export default function TrackCard({ track, onSelect, clipCount }: Props) {
   const albumArt = track.album.images[1]?.url ?? track.album.images[0]?.url;
   const artists = track.artists.map((a) => a.name).join(', ');
 
@@ -47,6 +48,13 @@ export default function TrackCard({ track, onSelect }: Props) {
           {track.album.name}
         </Text>
       </View>
+      {clipCount != null && clipCount > 0 && (
+        <View style={styles.clipBadge}>
+          <Text style={styles.clipBadgeText}>
+            {clipCount} clip{clipCount !== 1 ? 's' : ''} saved
+          </Text>
+        </View>
+      )}
       <View style={styles.actions}>
         <TouchableOpacity style={styles.openButton} onPress={openInSpotify}>
           <Text style={styles.openButtonText}>Open</Text>
@@ -128,6 +136,19 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 14,
+  },
+  clipBadge: {
+    backgroundColor: '#1DB95433',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  clipBadgeText: {
+    color: '#1DB954',
+    fontSize: 12,
+    fontWeight: '600',
   },
   attribution: {
     color: '#535353',

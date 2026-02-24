@@ -6,11 +6,11 @@ import {
   TextInput,
   ActivityIndicator,
   StyleSheet,
-  Alert,
 } from 'react-native';
 import { useSpotify } from '../hooks/useSpotify';
 import TrackCard from '../components/TrackCard';
 import { SpotifyTrack } from '../types';
+import { getTracksWithClipsForCard } from '../db/database';
 
 interface Props {
   route: any;
@@ -30,12 +30,23 @@ export default function SongCandidatesScreen({
   const [results, setResults] = useState<SpotifyTrack[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [tracksWithClips, setTracksWithClips] = useState<Map<string, number>>(new Map());
 
   useEffect(() => {
     if (accessToken && initialQuery) {
       doSearch(initialQuery);
     }
   }, [accessToken]);
+
+  useEffect(() => {
+    getTracksWithClipsForCard(cardId).then((rows) => {
+      const map = new Map<string, number>();
+      for (const row of rows) {
+        map.set(row.track_id, row.clip_count);
+      }
+      setTracksWithClips(map);
+    });
+  }, [cardId]);
 
   const doSearch = async (q: string) => {
     if (!q.trim()) return;
@@ -105,10 +116,20 @@ export default function SongCandidatesScreen({
         </Text>
       ) : (
         <FlatList
-          data={results}
+          data={[...results].sort((a, b) => {
+            const aClips = tracksWithClips.get(a.id) ?? 0;
+            const bClips = tracksWithClips.get(b.id) ?? 0;
+            if (aClips > 0 && bClips === 0) return -1;
+            if (aClips === 0 && bClips > 0) return 1;
+            return 0;
+          })}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TrackCard track={item} onSelect={handleSelect} />
+            <TrackCard
+              track={item}
+              onSelect={handleSelect}
+              clipCount={tracksWithClips.get(item.id)}
+            />
           )}
           contentContainerStyle={{ paddingBottom: 20 }}
         />

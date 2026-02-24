@@ -13,7 +13,7 @@ import { useSpotify } from '../hooks/useSpotify';
 import TimestampPicker from '../components/TimestampPicker';
 import {
   insertTimestamp,
-  getTimestampsByCard,
+  getTimestampsForCardAndTrack,
   deleteTimestamp,
   updateCardStatus,
 } from '../db/database';
@@ -73,7 +73,7 @@ export default function CaptureScreen({
   }, []);
 
   const loadTimestamps = async () => {
-    const ts = await getTimestampsByCard(cardId);
+    const ts = await getTimestampsForCardAndTrack(cardId, track.id);
     setTimestamps(ts as TimestampRow[]);
   };
 

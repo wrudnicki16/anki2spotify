@@ -190,6 +190,41 @@ export async function getTimestampsByCard(cardId: number): Promise<any[]> {
   );
 }
 
+export async function getTimestampsForCardAndTrack(
+  cardId: number,
+  trackId: string
+): Promise<any[]> {
+  const database = await getDatabase();
+  return database.getAllAsync(
+    'SELECT * FROM timestamps WHERE card_id = ? AND track_id = ? ORDER BY captured_at DESC',
+    [cardId, trackId]
+  );
+}
+
+export async function getTracksWithClipsForCard(
+  cardId: number
+): Promise<
+  {
+    track_id: string;
+    track_name: string;
+    artist_name: string;
+    album_art: string;
+    spotify_url: string;
+    spotify_uri: string;
+    clip_count: number;
+  }[]
+> {
+  const database = await getDatabase();
+  return database.getAllAsync(
+    `SELECT track_id, track_name, artist_name, album_art, spotify_url, spotify_uri, COUNT(*) as clip_count
+     FROM timestamps
+     WHERE card_id = ?
+     GROUP BY track_id
+     ORDER BY MAX(captured_at) DESC`,
+    cardId
+  ) as any;
+}
+
 export async function getTimestampsByDeck(deckId: number): Promise<any[]> {
   const database = await getDatabase();
   return database.getAllAsync(
