@@ -1,6 +1,7 @@
 import { File, Directory, Paths } from 'expo-file-system';
 import * as SQLite from 'expo-sqlite';
 import JSZip from 'jszip';
+import { decompress } from 'fzstd';
 
 export interface AnkiDeck {
   id: number;
@@ -29,6 +30,28 @@ export function splitFields(flds: string): string[] {
 
 const TEMP_DB_NAME = 'anki_import_tmp.db';
 
+async function extractDbBytes(zip: JSZip): Promise<{ bytes: Uint8Array; isNewSchema: boolean }> {
+  // Prefer collection.anki21b (newer Anki 23+ format: zstd-compressed SQLite)
+  const newEntry = zip.file('collection.anki21b');
+  if (newEntry) {
+    const compressed = await newEntry.async('uint8array');
+    return { bytes: decompress(compressed), isNewSchema: true };
+  }
+
+  // Fall back to legacy format
+  const legacyEntry = zip.file('collection.anki21') ?? zip.file('collection.anki2');
+  if (!legacyEntry) throw new Error('No collection database found in package');
+  return { bytes: await legacyEntry.async('uint8array'), isNewSchema: false };
+}
+
+function uint8ToBase64(bytes: Uint8Array): string {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
 export async function parseApkg(fileUri: string): Promise<ApkgResult> {
   const sqliteDir = new Directory(Paths.document, 'SQLite');
   const tempDbFile = new File(sqliteDir, TEMP_DB_NAME);
@@ -39,28 +62,37 @@ export async function parseApkg(fileUri: string): Promise<ApkgResult> {
     const apkgFile = new File(fileUri);
     const base64 = await apkgFile.base64();
 
-    // 2. Unzip and find the collection database
+    // 2. Unzip and extract the collection database
     const zip = await JSZip.loadAsync(base64, { base64: true });
-    const entry = zip.file('collection.anki21') ?? zip.file('collection.anki2');
-    if (!entry) throw new Error('No collection database found in package');
+    const { bytes: dbBytes, isNewSchema } = await extractDbBytes(zip);
 
     // 3. Write SQLite bytes to the app's SQLite directory
-    const dbBase64 = await entry.async('base64');
     if (!sqliteDir.exists) {
       sqliteDir.create({ intermediates: true });
     }
-    tempDbFile.write(dbBase64, { encoding: 'base64' });
+    tempDbFile.write(uint8ToBase64(dbBytes), { encoding: 'base64' });
 
     // 4. Open and query
     db = await SQLite.openDatabaseAsync(TEMP_DB_NAME);
 
-    const colRow = await db.getFirstAsync<{ decks: string }>('SELECT decks FROM col');
-    if (!colRow) throw new Error('Could not read deck information');
-
-    const decksJson = JSON.parse(colRow.decks) as Record<
-      string,
-      { id: number; name: string }
-    >;
+    // Read deck info — handle both old and new schemas
+    let deckMap: Record<string, { id: number; name: string }>;
+    if (isNewSchema) {
+      // New schema (Anki 23+ / schema 18): separate decks table
+      // Deck names use \x1f as hierarchy separator instead of ::
+      const deckRows = await db.getAllAsync<{ id: number; name: string }>(
+        "SELECT id, replace(name, char(31), '::') as name FROM decks"
+      );
+      deckMap = {};
+      for (const d of deckRows) {
+        deckMap[String(d.id)] = { id: d.id, name: d.name };
+      }
+    } else {
+      // Old schema: decks stored as JSON in the col table
+      const colRow = await db.getFirstAsync<{ decks: string }>('SELECT decks FROM col');
+      if (!colRow) throw new Error('Could not read deck information');
+      deckMap = JSON.parse(colRow.decks);
+    }
 
     // Count notes per deck, consistent with the assignment query below.
     // A note with cards in multiple decks is assigned to the lowest deck ID.
@@ -85,7 +117,7 @@ export async function parseApkg(fileUri: string): Promise<ApkgResult> {
     db = null;
 
     // 5. Build deck list (only decks that have notes)
-    const decks: AnkiDeck[] = Object.values(decksJson)
+    const decks: AnkiDeck[] = Object.values(deckMap)
       .map((d) => ({
         id: d.id,
         name: d.name,

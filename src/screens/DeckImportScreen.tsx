@@ -100,8 +100,8 @@ export default function DeckImportScreen({ navigation }: any) {
           }
           setApkgResult(parsed);
           setSelectedDeckIds(parsed.decks.map((d) => d.id));
-        } catch {
-          Alert.alert('Error', "Could not read this file. Make sure it's a valid .apkg export from Anki.");
+        } catch (err: any) {
+          Alert.alert('Import Error', err?.message || "Could not read this file. Make sure it's a valid .apkg export from Anki.");
         } finally {
           setLoading(false);
         }
