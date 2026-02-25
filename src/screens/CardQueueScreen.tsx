@@ -5,6 +5,9 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Modal,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { getCardsByDeck, updateDeckSearchField, getTrackForCard } from '../db/database';
@@ -27,6 +30,10 @@ export default function CardQueueScreen({ route, navigation }: any) {
 
   const [lyricsOnly, setLyricsOnly] = useState(false);
 
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [playlistName, setPlaylistName] = useState(deckName);
+
   const toggleSearchField = async () => {
     const next = searchField === 'back' ? 'front' : 'back';
     setSearchField(next);
@@ -39,6 +46,36 @@ export default function CardQueueScreen({ route, navigation }: any) {
         return text.trim().split(/\s+/).length >= 3;
       })
     : cards;
+
+  const handleCreatePlaylist = () => {
+    if (displayedCards.length === 0) {
+      Alert.alert('No cards', 'There are no cards with the current filters.');
+      return;
+    }
+    setShowPlaylistModal(true);
+  };
+
+  const handleConfirmPlaylist = () => {
+    setShowPlaylistModal(false);
+    setPlaylistName(deckName);
+    setShowNameModal(true);
+  };
+
+  const handleSubmitPlaylistName = () => {
+    if (!playlistName.trim()) return;
+    setShowNameModal(false);
+    const cardParams = displayedCards.map((c) => ({
+      id: c.id,
+      front: c.front,
+      back: c.back,
+      status: c.status,
+      searchText: searchField === 'front' ? c.front : c.back,
+    }));
+    navigation.navigate('PlaylistProgress', {
+      playlistName: playlistName.trim(),
+      cards: cardParams,
+    });
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -73,6 +110,12 @@ export default function CardQueueScreen({ route, navigation }: any) {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{deckName}</Text>
+        <TouchableOpacity
+          style={styles.playlistButton}
+          onPress={handleCreatePlaylist}
+        >
+          <Text style={styles.playlistButtonText}>Playlist</Text>
+        </TouchableOpacity>
         <TouchableOpacity
           style={styles.exportButton}
           onPress={() =>
@@ -214,6 +257,69 @@ export default function CardQueueScreen({ route, navigation }: any) {
           )}
         />
       )}
+
+      {/* Confirmation modal */}
+      <Modal visible={showPlaylistModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Create Playlist</Text>
+            <Text style={styles.modalBody}>
+              Create a Spotify playlist from {displayedCards.length} card
+              {displayedCards.length !== 1 ? 's' : ''}?
+            </Text>
+            <Text style={styles.modalHint}>
+              Adjust your filters to change which songs are included.
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancel}
+                onPress={() => setShowPlaylistModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirm}
+                onPress={handleConfirmPlaylist}
+              >
+                <Text style={styles.modalConfirmText}>Continue</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Playlist name modal */}
+      <Modal visible={showNameModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Playlist Name</Text>
+            <TextInput
+              style={styles.nameInput}
+              value={playlistName}
+              onChangeText={setPlaylistName}
+              placeholder="Enter playlist name"
+              placeholderTextColor="#666"
+              autoFocus
+              onSubmitEditing={handleSubmitPlaylistName}
+              returnKeyType="done"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalCancel}
+                onPress={() => setShowNameModal(false)}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalConfirm}
+                onPress={handleSubmitPlaylistName}
+              >
+                <Text style={styles.modalConfirmText}>Create</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -311,5 +417,82 @@ const styles = StyleSheet.create({
     height: 10,
     borderRadius: 5,
     marginLeft: 10,
+  },
+  playlistButton: {
+    backgroundColor: '#1DB954',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  playlistButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    backgroundColor: '#282828',
+    borderRadius: 16,
+    padding: 24,
+    width: '100%',
+    maxWidth: 340,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  modalBody: {
+    color: '#b3b3b3',
+    fontSize: 15,
+    marginBottom: 8,
+  },
+  modalHint: {
+    color: '#727272',
+    fontSize: 13,
+    marginBottom: 20,
+    fontStyle: 'italic',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  modalCancel: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 24,
+    backgroundColor: '#535353',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
+  modalConfirm: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 24,
+    backgroundColor: '#1DB954',
+    alignItems: 'center',
+  },
+  modalConfirmText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
+  nameInput: {
+    backgroundColor: '#1e1e1e',
+    color: '#fff',
+    fontSize: 16,
+    padding: 14,
+    borderRadius: 8,
+    marginBottom: 20,
   },
 });

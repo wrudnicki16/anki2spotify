@@ -6,6 +6,8 @@ export const SPOTIFY_SCOPES = [
   'user-read-playback-state',
   'user-read-currently-playing',
   'user-modify-playback-state',
+  'playlist-modify-public',
+  'playlist-modify-private',
 ];
 
 export const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
@@ -13,7 +15,5 @@ export const SPOTIFY_TOKEN_ENDPOINT = 'https://accounts.spotify.com/api/token';
 export const SPOTIFY_API_BASE = 'https://api.spotify.com/v1';
 
 export const getRedirectUri = () => {
-  const uri = Linking.createURL('callback');
-  console.log('Spotify redirect URI:', uri);
-  return uri;
+  return Linking.createURL('callback');
 };

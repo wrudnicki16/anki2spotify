@@ -7,6 +7,20 @@ export function useSpotify(accessToken: string | null) {
     'Content-Type': 'application/json',
   };
 
+  const fetchWithRetry = async (
+    url: string,
+    options: RequestInit,
+    maxRetries = 3
+  ): Promise<Response> => {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const res = await fetch(url, options);
+      if (res.status !== 429 || attempt === maxRetries) return res;
+      const retryAfter = parseInt(res.headers.get('Retry-After') ?? '1', 10);
+      await new Promise((r) => setTimeout(r, retryAfter * 1000 * (attempt + 1)));
+    }
+    throw new Error('Max retries exceeded');
+  };
+
   const searchTracks = async (
     query: string,
     limit: number = 10
@@ -66,5 +80,53 @@ export function useSpotify(accessToken: string | null) {
     }
   };
 
-  return { searchTracks, getPlaybackState, seekToPosition, playTrack };
+  const createPlaylist = async (
+    name: string
+  ): Promise<{ id: string; uri: string; external_urls: { spotify: string } } | null> => {
+    if (!accessToken) return null;
+    try {
+      const res = await fetchWithRetry(`${SPOTIFY_API_BASE}/me/playlists`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name, public: true }),
+      });
+      if (!res.ok) return null;
+      return res.json();
+    } catch {
+      return null;
+    }
+  };
+
+  const addTracksToPlaylist = async (
+    playlistId: string,
+    uris: string[]
+  ): Promise<boolean> => {
+    if (!accessToken) return false;
+    try {
+      for (let i = 0; i < uris.length; i += 100) {
+        const batch = uris.slice(i, i + 100);
+        const res = await fetchWithRetry(
+          `${SPOTIFY_API_BASE}/playlists/${playlistId}/items`,
+          {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ uris: batch }),
+          }
+        );
+        if (!res.ok) return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  return {
+    searchTracks,
+    getPlaybackState,
+    seekToPosition,
+    playTrack,
+    createPlaylist,
+    addTracksToPlaylist,
+  };
 }

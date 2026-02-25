@@ -5,6 +5,7 @@ import CardQueueScreen from '../screens/CardQueueScreen';
 import SongCandidatesScreen from '../screens/SongCandidatesScreen';
 import CaptureScreen from '../screens/CaptureScreen';
 import ExportScreen from '../screens/ExportScreen';
+import PlaylistProgressScreen from '../screens/PlaylistProgressScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -52,6 +53,14 @@ export default function AppNavigator({ accessToken }: Props) {
         component={ExportScreen}
         options={{ title: 'Export' }}
       />
+      <Stack.Screen
+        name="PlaylistProgress"
+        options={{ title: 'Creating Playlist', headerBackVisible: false }}
+      >
+        {(props: any) => (
+          <PlaylistProgressScreen {...props} accessToken={accessToken} />
+        )}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 }
