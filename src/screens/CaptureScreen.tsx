@@ -296,14 +296,14 @@ export default function CaptureScreen({
         </TouchableOpacity>
       ) : null}
 
-      {reviewMode && pendingCount != null && (
-        <Text style={styles.progressText}>{pendingCount} card{pendingCount !== 1 ? 's' : ''} remaining</Text>
-      )}
-
       {reviewMode && timestamps.length > 0 && (
         <TouchableOpacity style={styles.nextCardButton} onPress={handleNextCard}>
           <Text style={styles.nextCardButtonText}>Next Card</Text>
         </TouchableOpacity>
+      )}
+
+      {reviewMode && pendingCount != null && (
+        <Text style={styles.progressText}>{pendingCount} card{pendingCount !== 1 ? 's' : ''} remaining</Text>
       )}
 
       {showManual && (
