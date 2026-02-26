@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TouchableOpacity,
-  FlatList,
+  ScrollView,
   StyleSheet,
   Alert,
   Linking,
@@ -224,7 +224,7 @@ export default function CaptureScreen({
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Track info */}
       <View style={styles.trackHeader}>
         {track.albumArt ? (
@@ -317,49 +317,45 @@ export default function CaptureScreen({
       {timestamps.length > 0 && (
         <>
           <Text style={styles.savedTitle}>Saved Clips</Text>
-          <FlatList
-            data={timestamps}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.tsItem}>
-                <View style={styles.tsInfo}>
-                  <Text style={styles.tsTime}>
-                    {formatMs(item.progress_ms)}
-                  </Text>
-                  {item.note ? (
-                    <Text style={styles.tsNote}>{item.note}</Text>
-                  ) : null}
-                  <Text style={styles.tsMode}>
-                    {item.capture_mode === 'auto' ? 'Auto' : 'Manual'}
-                  </Text>
-                </View>
-                <View style={styles.tsActions}>
-                  <TouchableOpacity
-                    onPress={() => copyTimestamp(item.progress_ms)}
-                  >
-                    <Text style={styles.tsActionText}>Copy</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={() => handleJump(item.progress_ms)}
-                  >
-                    <Text style={styles.tsActionText}>Jump</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                    <Text style={[styles.tsActionText, { color: '#e74c3c' }]}>
-                      Del
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+          {timestamps.map((item) => (
+            <View key={item.id} style={styles.tsItem}>
+              <View style={styles.tsInfo}>
+                <Text style={styles.tsTime}>
+                  {formatMs(item.progress_ms)}
+                </Text>
+                {item.note ? (
+                  <Text style={styles.tsNote}>{item.note}</Text>
+                ) : null}
+                <Text style={styles.tsMode}>
+                  {item.capture_mode === 'auto' ? 'Auto' : 'Manual'}
+                </Text>
               </View>
-            )}
-          />
+              <View style={styles.tsActions}>
+                <TouchableOpacity
+                  onPress={() => copyTimestamp(item.progress_ms)}
+                >
+                  <Text style={styles.tsActionText}>Copy</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleJump(item.progress_ms)}
+                >
+                  <Text style={styles.tsActionText}>Jump</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                  <Text style={[styles.tsActionText, { color: '#e74c3c' }]}>
+                    Del
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
         </>
       )}
 
       <Text style={styles.attribution}>
         Content provided by Spotify. Tap "Open in Spotify" to listen.
       </Text>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -367,7 +363,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
+  },
+  contentContainer: {
     padding: 16,
+    paddingBottom: 40,
   },
   trackHeader: {
     flexDirection: 'row',
