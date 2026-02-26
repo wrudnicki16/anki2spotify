@@ -133,6 +133,10 @@ export default function CaptureScreen({
     setAutoStatus('');
   };
 
+  const handleMarkAtZero = async () => {
+    await saveTimestamp(0, '', 'manual');
+  };
+
   const handleManualSubmit = async (ms: number, note: string) => {
     await saveTimestamp(ms, note, 'manual');
   };
@@ -249,12 +253,20 @@ export default function CaptureScreen({
         <Text style={styles.openButtonText}>Open in Spotify</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.captureButton}
-        onPress={handleAutoCapture}
-      >
-        <Text style={styles.captureButtonText}>Mark Timestamp</Text>
-      </TouchableOpacity>
+      <View style={styles.captureRow}>
+        <TouchableOpacity
+          style={[styles.captureButton, { flex: 1 }]}
+          onPress={handleAutoCapture}
+        >
+          <Text style={styles.captureButtonText}>Mark Timestamp</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.markZeroButton}
+          onPress={handleMarkAtZero}
+        >
+          <Text style={styles.markZeroButtonText}>Mark at 0:00</Text>
+        </TouchableOpacity>
+      </View>
 
       {autoStatus ? (
         <Text style={styles.statusText}>{autoStatus}</Text>
@@ -414,17 +426,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
   },
+  captureRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 8,
+  },
   captureButton: {
     backgroundColor: '#e74c3c',
     padding: 18,
     borderRadius: 30,
     alignItems: 'center',
-    marginBottom: 8,
   },
   captureButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '800',
+  },
+  markZeroButton: {
+    backgroundColor: '#535353',
+    padding: 18,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markZeroButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
   },
   statusText: {
     color: '#f39c12',
