@@ -19,7 +19,7 @@ The answer is yes, with some intentional tradeoffs:
 ## Features
 
 ### Deck Management
-- Import Anki decks exported as CSV (tab- or comma-separated, with or without a header row, strips `#` metadata directives)
+- Import Anki decks — supports both `.apkg` (Anki's native zipped SQLite format, including Anki 23+ zstd-compressed databases) and CSV (tab- or comma-separated, with or without a header row, strips `#` metadata directives)
 - Preview up to 20 cards before confirming import
 - View all decks on the home screen with card counts
 - Long-press a deck to delete it (cascades to cards and timestamps)
@@ -31,6 +31,8 @@ The answer is yes, with some intentional tradeoffs:
   * Why? Spotify returns only song titles, artists, and album matches for 1-2 words
 - Tapping a **matched** card skips the search screen and goes directly to the Capture screen showing the previously saved track
 - Tapping a **pending** card opens the Song Candidates search
+- **Match Cards** — sequential review mode that auto-advances through pending cards (respects current filters). Cards with no Spotify results are auto-skipped. After capturing a timestamp, a "Next Card" button advances to the next pending card without navigating back to the queue
+- **Playlist** — generate a Spotify playlist from the currently displayed cards. Uses the first search result per card to build the playlist in bulk
 
 ### Song Search
 - Spotify track search auto-runs on arrival using the card's search field
@@ -39,6 +41,7 @@ The answer is yes, with some intentional tradeoffs:
 
 ### Timestamp Capture
 - **Auto-capture:** reads Spotify's current playback state and records `progress_ms` in one tap
+- **Mark at 0:00:** instantly saves a zero-second timestamp for users who just want to match a song and move on
 - **Manual entry:** `mm:ss` picker always available as a fallback
 - **Jump (Premium):** calls Spotify's seek endpoint to start playback at the exact saved timestamp
 - **Open in Spotify:** deep-links to the track via `spotify:track:` URI with HTTPS fallback
@@ -61,6 +64,7 @@ The answer is yes, with some intentional tradeoffs:
 | Navigation | `@react-navigation/native-stack` |
 | Database | `expo-sqlite` (WAL mode) |
 | File I/O | `expo-document-picker`, `expo-file-system` |
+| APKG parsing | `jszip`, `fzstd` (zstd decompression for Anki 23+ databases) |
 | Sharing | `expo-sharing` |
 | Auth | `expo-web-browser` — Authorization Code + PKCE flow |
 | Spotify API | Web API — search, playback state, seek, play |
@@ -92,10 +96,11 @@ DeckImportScreen
   └── CardQueueScreen
         ├── SongCandidatesScreen  (pending cards, or "Search for different track")
         │     └── CaptureScreen
-        └── CaptureScreen         (matched cards — skips search)
-
-CardQueueScreen
-  └── ExportScreen
+        ├── CaptureScreen             (matched cards — skips search)
+        ├── SongCandidatesScreen      (Match Cards — sequential review mode)
+        │     └── CaptureScreen       (Next Card loops back to SongCandidates)
+        ├── PlaylistProgressScreen    (Playlist — bulk playlist creation)
+        └── ExportScreen
 ```
 
 ---
@@ -104,33 +109,12 @@ CardQueueScreen
 
 - Authorization Code + PKCE (implicit flow deprecated by Spotify)
 - Redirect URI: `makeRedirectUri()` with no path — matches `exp://...exp.direct` registered in the Spotify Developer Dashboard
-- Scopes used: `user-read-playback-state`, `user-modify-playback-state`
+- Scopes used: `user-read-playback-state`, `user-modify-playback-state`, `playlist-modify-public`, `playlist-modify-private`
 - `WebBrowser.openAuthSessionAsync` with `showInRecents: false` so the browser auto-closes after redirect
 
 ---
 
-## What Could Come Next
-
-The original design conversation covered several ideas that aren't yet built. Here's what was discussed and the current status:
-
-### Must have
-
-**APKG import**
-Anki's native `.apkg` format is a zipped SQLite database + media. Currently only CSV export is supported. APKG support would make the import flow much smoother for most Anki users.
-
----
-
-### Actively being considered
-
-**Playlist / queue builder**
-Generate a Spotify playlist from all the matched tracks for a deck — so you could review a whole deck's worth of songs in one listening session. Could also just use the currently filtered cards list and use the first suggested song - quicker but less precise. Likely requires working around Spotify's rate-limited API.
-
-**Review mode**
-A "Play next match → one-tap capture" flow that steps through unmatched cards sequentially, making bulk capture faster. Convenience feature.
-
----
-
-### Alternatives originally considered
+## Alternatives Originally Considered
 
 **Lyric matching / display**
 The conversation explicitly deferred lyrics to v2. When added, the cleanest options are:
@@ -153,3 +137,4 @@ The exported CSV maps directly back to Anki's import format, but a dedicated "An
 **Confidence scoring and auto-ranking**
 Right now search results are shown in Spotify's default relevance order. A scoring layer that ranks candidates by how likely they are to actually contain the card's phrase (based on title/artist match, genre, etc.) would reduce manual browsing. Or if users want to score by artist popularity or song listens to maximize enjoyment, this could also be useful.
 **Updated:** Spotify removed popularity info from API, relevance likely already included in search.
+
