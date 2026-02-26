@@ -5,12 +5,14 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
+  TouchableOpacity,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import { useSpotify } from '../hooks/useSpotify';
 import TrackCard from '../components/TrackCard';
 import { SpotifyTrack } from '../types';
-import { getTracksWithClipsForCard } from '../db/database';
+import { getTracksWithClipsForCard, updateCardStatus, getNextPendingCard, getPendingCardCount } from '../db/database';
 
 interface Props {
   route: any;
@@ -23,7 +25,7 @@ export default function SongCandidatesScreen({
   navigation,
   accessToken,
 }: Props) {
-  const { cardId, cardFront, cardBack, searchField } = route.params;
+  const { cardId, cardFront, cardBack, searchField, reviewMode, deckId, lyricsOnly } = route.params;
   const { searchTracks } = useSpotify(accessToken);
   const initialQuery = searchField === 'front' ? cardFront : cardBack;
   const [query, setQuery] = useState(initialQuery);
@@ -31,6 +33,13 @@ export default function SongCandidatesScreen({
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [tracksWithClips, setTracksWithClips] = useState<Map<string, number>>(new Map());
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (reviewMode && deckId != null) {
+      getPendingCardCount(deckId, searchField ?? 'back', !!lyricsOnly).then(setPendingCount);
+    }
+  }, [cardId]);
 
   useEffect(() => {
     if (accessToken && initialQuery) {
@@ -48,6 +57,32 @@ export default function SongCandidatesScreen({
     });
   }, [cardId]);
 
+  const reviewParams = reviewMode
+    ? { reviewMode: true, deckId, lyricsOnly }
+    : {};
+
+  const advanceToNext = async () => {
+    const next = await getNextPendingCard(deckId, cardId, searchField ?? 'back', !!lyricsOnly);
+    if (!next) {
+      Alert.alert('All done!', 'No more pending cards to process.', [
+        { text: 'OK', onPress: () => navigation.navigate('CardQueue') },
+      ]);
+      return;
+    }
+    navigation.replace('SongCandidates', {
+      cardId: next.id,
+      cardFront: next.front,
+      cardBack: next.back,
+      searchField,
+      ...reviewParams,
+    });
+  };
+
+  const handleSkip = async () => {
+    await updateCardStatus(cardId, 'skipped');
+    await advanceToNext();
+  };
+
   const doSearch = async (q: string) => {
     if (!q.trim()) return;
     setLoading(true);
@@ -55,6 +90,12 @@ export default function SongCandidatesScreen({
     const tracks = await searchTracks(q.trim());
     setResults(tracks);
     setLoading(false);
+
+    // Auto-skip when no results in review mode
+    if (reviewMode && tracks.length === 0) {
+      await updateCardStatus(cardId, 'skipped');
+      await advanceToNext();
+    }
   };
 
   const handleSelect = (track: SpotifyTrack) => {
@@ -62,6 +103,8 @@ export default function SongCandidatesScreen({
       cardId,
       cardFront,
       cardBack,
+      searchField,
+      ...reviewParams,
       track: {
         id: track.id,
         name: track.name,
@@ -87,6 +130,10 @@ export default function SongCandidatesScreen({
 
   return (
     <View style={styles.container}>
+      {reviewMode && pendingCount != null && (
+        <Text style={styles.progressText}>{pendingCount} card{pendingCount !== 1 ? 's' : ''} remaining</Text>
+      )}
+
       <View style={styles.cardInfo}>
         <Text style={styles.cardFront}>{cardFront}</Text>
         <Text style={styles.cardBack}>{cardBack}</Text>
@@ -103,6 +150,12 @@ export default function SongCandidatesScreen({
           returnKeyType="search"
         />
       </View>
+
+      {reviewMode && (
+        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+          <Text style={styles.skipButtonText}>Skip</Text>
+        </TouchableOpacity>
+      )}
 
       {loading ? (
         <ActivityIndicator
@@ -180,5 +233,23 @@ const styles = StyleSheet.create({
     color: '#727272',
     textAlign: 'center',
     marginTop: 40,
+  },
+  progressText: {
+    color: '#b3b3b3',
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  skipButton: {
+    backgroundColor: '#535353',
+    padding: 12,
+    borderRadius: 24,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  skipButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
 });

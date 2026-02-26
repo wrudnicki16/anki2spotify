@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { getCardsByDeck, updateDeckSearchField, getTrackForCard } from '../db/database';
+import { getCardsByDeck, updateDeckSearchField, getTrackForCard, getNextPendingCard } from '../db/database';
 
 interface CardRow {
   id: number;
@@ -77,6 +77,23 @@ export default function CardQueueScreen({ route, navigation }: any) {
     });
   };
 
+  const handleStartMatchCards = async () => {
+    const first = await getNextPendingCard(deckId, null, searchField, lyricsOnly);
+    if (!first) {
+      Alert.alert('No pending cards', 'All cards matching current filters have been processed.');
+      return;
+    }
+    navigation.navigate('SongCandidates', {
+      cardId: first.id,
+      cardFront: first.front,
+      cardBack: first.back,
+      searchField,
+      reviewMode: true,
+      deckId,
+      lyricsOnly,
+    });
+  };
+
   useFocusEffect(
     useCallback(() => {
       loadCards();
@@ -115,6 +132,12 @@ export default function CardQueueScreen({ route, navigation }: any) {
           onPress={handleCreatePlaylist}
         >
           <Text style={styles.playlistButtonText}>Playlist</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.matchButton}
+          onPress={handleStartMatchCards}
+        >
+          <Text style={styles.matchButtonText}>Match Cards</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.exportButton}
@@ -426,6 +449,18 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   playlistButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 13,
+  },
+  matchButton: {
+    backgroundColor: '#e74c3c',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginRight: 8,
+  },
+  matchButtonText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 13,

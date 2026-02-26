@@ -16,7 +16,10 @@ import {
   getTimestampsForCardAndTrack,
   deleteTimestamp,
   updateCardStatus,
+  getNextPendingCard,
+  getPendingCardCount,
 } from '../db/database';
+import { CommonActions } from '@react-navigation/native';
 import * as Clipboard from 'expo-clipboard';
 
 interface TrackParam {
@@ -55,18 +58,28 @@ export default function CaptureScreen({
   navigation,
   accessToken,
 }: Props) {
-  const { cardId, cardFront, cardBack, track, searchField } = route.params as {
+  const { cardId, cardFront, cardBack, track, searchField, reviewMode, deckId, lyricsOnly } = route.params as {
     cardId: number;
     cardFront: string;
     cardBack: string;
     track: TrackParam;
     searchField?: string;
+    reviewMode?: boolean;
+    deckId?: number;
+    lyricsOnly?: boolean;
   };
 
   const { getPlaybackState, playTrack } = useSpotify(accessToken);
   const [timestamps, setTimestamps] = useState<TimestampRow[]>([]);
   const [showManual, setShowManual] = useState(false);
   const [autoStatus, setAutoStatus] = useState<string>('');
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (reviewMode && deckId != null) {
+      getPendingCardCount(deckId, (searchField as 'front' | 'back') ?? 'back', !!lyricsOnly).then(setPendingCount);
+    }
+  }, []);
 
   useEffect(() => {
     loadTimestamps();
@@ -170,6 +183,42 @@ export default function CaptureScreen({
     ]);
   };
 
+  const reviewParams = reviewMode
+    ? { reviewMode: true, deckId, lyricsOnly }
+    : {};
+
+  const handleNextCard = async () => {
+    const next = await getNextPendingCard(deckId!, cardId, (searchField as 'front' | 'back') ?? 'back', !!lyricsOnly);
+    if (!next) {
+      Alert.alert('All done!', 'No more pending cards to process.', [
+        { text: 'OK', onPress: () => navigation.navigate('CardQueue') },
+      ]);
+      return;
+    }
+    const state = navigation.getState();
+    // Find the last route before SongCandidates in the stack
+    const songIdx = state.routes.findIndex((r: any) => r.name === 'SongCandidates');
+    const baseRoutes = songIdx > 0 ? state.routes.slice(0, songIdx) : state.routes.slice(0, -2);
+    navigation.dispatch(
+      CommonActions.reset({
+        index: baseRoutes.length,
+        routes: [
+          ...baseRoutes,
+          {
+            name: 'SongCandidates',
+            params: {
+              cardId: next.id,
+              cardFront: next.front,
+              cardBack: next.back,
+              searchField,
+              ...reviewParams,
+            },
+          },
+        ],
+      })
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Track info */}
@@ -227,12 +276,23 @@ export default function CaptureScreen({
               cardFront,
               cardBack,
               searchField,
+              ...reviewParams,
             })
           }
         >
           <Text style={styles.manualLinkText}>Search for different track</Text>
         </TouchableOpacity>
       ) : null}
+
+      {reviewMode && pendingCount != null && (
+        <Text style={styles.progressText}>{pendingCount} card{pendingCount !== 1 ? 's' : ''} remaining</Text>
+      )}
+
+      {reviewMode && timestamps.length > 0 && (
+        <TouchableOpacity style={styles.nextCardButton} onPress={handleNextCard}>
+          <Text style={styles.nextCardButtonText}>Next Card</Text>
+        </TouchableOpacity>
+      )}
 
       {showManual && (
         <TimestampPicker
@@ -427,5 +487,23 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: 'center',
     marginTop: 12,
+  },
+  progressText: {
+    color: '#b3b3b3',
+    fontSize: 13,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  nextCardButton: {
+    backgroundColor: '#1DB954',
+    padding: 16,
+    borderRadius: 30,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  nextCardButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });

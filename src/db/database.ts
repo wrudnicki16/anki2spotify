@@ -258,3 +258,38 @@ export async function deleteTimestamp(id: number): Promise<void> {
   const database = await getDatabase();
   await database.runAsync('DELETE FROM timestamps WHERE id = ?', id);
 }
+
+// --- Review mode helpers ---
+
+export async function getNextPendingCard(
+  deckId: number,
+  currentCardId: number | null,
+  searchField: 'front' | 'back',
+  lyricsOnly: boolean
+): Promise<{ id: number; front: string; back: string; status: string } | null> {
+  const database = await getDatabase();
+  const rows: any[] = await database.getAllAsync(
+    `SELECT id, front, back, status FROM cards
+     WHERE deck_id = ? AND status = 'pending' AND id > ?
+     ORDER BY id`,
+    [deckId, currentCardId ?? 0]
+  );
+  if (!lyricsOnly) return rows[0] ?? null;
+  const field = searchField === 'front' ? 'front' : 'back';
+  return rows.find((r) => r[field].trim().split(/\s+/).length >= 3) ?? null;
+}
+
+export async function getPendingCardCount(
+  deckId: number,
+  searchField: 'front' | 'back',
+  lyricsOnly: boolean
+): Promise<number> {
+  const database = await getDatabase();
+  const rows: any[] = await database.getAllAsync(
+    `SELECT front, back FROM cards WHERE deck_id = ? AND status = 'pending'`,
+    deckId
+  );
+  if (!lyricsOnly) return rows.length;
+  const field = searchField === 'front' ? 'front' : 'back';
+  return rows.filter((r) => r[field].trim().split(/\s+/).length >= 3).length;
+}
