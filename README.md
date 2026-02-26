@@ -128,9 +128,6 @@ Generate a Spotify playlist from all the matched tracks for a deck — so you co
 **Review mode**
 A "Play next match → one-tap capture" flow that steps through unmatched cards sequentially, making bulk capture faster. Convenience feature.
 
-**Confidence scoring and auto-ranking**
-Right now search results are shown in Spotify's default relevance order. A scoring layer that ranks candidates by how likely they are to actually contain the card's phrase (based on title/artist match, genre, etc.) would reduce manual browsing. Or if users want to score by artist popularity or song listens to maximize enjoyment, this could also be useful. Unsure how much we can get from Spotify's API here.
-
 ---
 
 ### Alternatives originally considered
@@ -152,3 +149,6 @@ Genius was discussed as a useful canonical song index — better at resolving al
 
 **Re-import to Anki**
 The exported CSV maps directly back to Anki's import format, but a dedicated "Anki-ready export" mode with the timestamp formatted as a note field would make the round-trip seamless.
+
+**Confidence scoring and auto-ranking**
+Right now search results are shown in Spotify's default relevance order. A scoring layer that ranks candidates by how likely they are to actually contain the card's phrase (based on title/artist match, genre, etc.) would reduce manual browsing. Or if users want to score by artist popularity or song listens to maximize enjoyment, this could also be useful. **updated:** Spotify removed popularity info from API, relevance likely already included in search.
