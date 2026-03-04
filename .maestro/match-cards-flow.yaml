@@ -3,7 +3,7 @@ appId: host.exp.exponent
 # Journey 4a: Batch review mode (Match Cards)
 # Precondition: Deck with pending cards exists, Spotify connected
 - launchApp
-- openLink: "exp://10.0.2.2:8081"
+- openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:

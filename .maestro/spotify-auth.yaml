@@ -3,7 +3,7 @@ appId: host.exp.exponent
 # Journey 7: Spotify authentication
 # Note: Full auth flow cannot be automated (requires Spotify credentials)
 - launchApp
-- openLink: "exp://10.0.2.2:8081"
+- openLink: "${EXPO_URL}"
 
 # Assert app launches with DeckImportScreen
 - assertVisible: "Anki2Spotify"

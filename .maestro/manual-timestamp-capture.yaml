@@ -3,7 +3,7 @@ appId: host.exp.exponent
 # Journey 3b: Manual timestamp capture on CaptureScreen
 # Precondition: On CaptureScreen with a selected track
 - launchApp
-- openLink: "exp://10.0.2.2:8081"
+- openLink: "${EXPO_URL}"
 
 # Navigate to a deck → card → track → CaptureScreen
 - tapOn:

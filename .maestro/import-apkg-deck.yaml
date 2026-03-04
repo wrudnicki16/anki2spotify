@@ -2,7 +2,7 @@ appId: host.exp.exponent
 ---
 # Journey 1b: Import an APKG deck
 - launchApp
-- openLink: "exp://10.0.2.2:8081"
+- openLink: "${EXPO_URL}"
 
 # Assert DeckImportScreen
 - assertVisible: "Anki2Spotify"

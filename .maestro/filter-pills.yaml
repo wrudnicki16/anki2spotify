@@ -3,7 +3,7 @@ appId: host.exp.exponent
 # Journey 2b: Filter pills on CardQueueScreen
 # Precondition: Navigate to CardQueueScreen with cards
 - launchApp
-- openLink: "exp://10.0.2.2:8081"
+- openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:

@@ -3,7 +3,7 @@ appId: host.exp.exponent
 # Journey 6a: Export timestamps as CSV
 # Precondition: Deck with saved timestamps exists
 - launchApp
-- openLink: "exp://10.0.2.2:8081"
+- openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:

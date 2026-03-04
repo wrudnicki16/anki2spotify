@@ -3,7 +3,7 @@ appId: host.exp.exponent
 # Journey 3d: Manage saved clips on CaptureScreen
 # Precondition: On CaptureScreen with at least one saved clip
 - launchApp
-- openLink: "exp://10.0.2.2:8081"
+- openLink: "${EXPO_URL}"
 
 # Navigate to CaptureScreen
 - tapOn:

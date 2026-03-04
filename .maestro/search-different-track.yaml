@@ -3,7 +3,7 @@ appId: host.exp.exponent
 # Journey 3e: Search for a different track
 # Precondition: On CaptureScreen with a selected track
 - launchApp
-- openLink: "exp://10.0.2.2:8081"
+- openLink: "${EXPO_URL}"
 
 # Navigate to CaptureScreen
 - tapOn:
