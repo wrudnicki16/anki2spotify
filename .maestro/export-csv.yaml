@@ -1,20 +1,21 @@
-appId: host.exp.Exponent
+appId: host.exp.exponent
 ---
 # Journey 6a: Export timestamps as CSV
 # Precondition: Deck with saved timestamps exists
 - launchApp
+- openLink: "exp://10.0.2.2:8081"
 
 # Navigate to first deck
 - tapOn:
-    text: "cards"
+    text: ".*cards"
     index: 0
 
 # Tap "Export" button
 - tapOn: "Export"
 
 # Assert ExportScreen
-- assertVisible: "Export:"
-- assertVisible: "to export"
+- assertVisible: "Export:.*"
+- assertVisible: ".*to export"
 
 # Tap "Export CSV"
 - tapOn: "Export CSV"

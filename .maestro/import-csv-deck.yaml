@@ -1,7 +1,8 @@
-appId: host.exp.Exponent
+appId: host.exp.exponent
 ---
 # Journey 1a: Import a CSV deck
 - launchApp
+- openLink: "exp://10.0.2.2:8081"
 
 # Assert DeckImportScreen initial state
 - assertVisible: "Anki2Spotify"
