@@ -1,0 +1,46 @@
+appId: host.exp.exponent
+---
+# Setup: Import test .apkg deck (reusable, no "empty DB" assertions)
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 5000
+- openLink: "${EXPO_URL}"
+
+# Tap Import Deck → opens OS file picker
+- tapOn: "Import Deck"
+
+# Android: select file from document picker (skipped on iOS)
+- runFlow:
+    file: ../partials/select-apkg-file.yaml
+    env:
+      FILE_NAME: "test-deck"
+    optional: true
+
+# Post-picker: select decks and confirm import
+- assertVisible:
+    text: "Select Decks to Import"
+    optional: true
+
+# Select all decks (default) and import
+- tapOn:
+    text: "Import.*deck"
+    optional: true
+
+# Confirm import on card preview
+- tapOn:
+    text: "Confirm Import"
+    optional: true
+
+# Dismiss success alert
+- assertVisible:
+    text: "Success"
+    optional: true
+- tapOn:
+    text: "OK"
+    optional: true
+
+# Assert back on deck list
+- assertVisible:
+    text: "Your Decks"
+    optional: true

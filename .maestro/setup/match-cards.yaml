@@ -1,0 +1,74 @@
+appId: host.exp.exponent
+---
+# Setup: Match all cards in first deck with Spotify tracks
+# Precondition: Deck imported, Spotify connected
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 5000
+- openLink: "${EXPO_URL}"
+
+# Connect to Spotify
+- tapOn: "Connect Spotify"
+- extendedWaitUntil:
+    visible: "Agree"
+    timeout: 5000
+    optional: true
+- tapOn:
+    text: "Agree"
+    optional: true
+
+# Navigate to first deck
+- tapOn:
+    text: ".*cards"
+    index: 0
+
+# Enter review mode
+- tapOn: "Match Cards"
+
+# Wait for search results
+- extendedWaitUntil:
+    visible: "Select"
+    timeout: 10000
+
+# Card 1: Select track and mark at 0:00
+- tapOn:
+    text: "Select"
+    index: 0
+- tapOn: "Mark at 0:00"
+
+# Card 2: advance and match
+- tapOn:
+    text: "Next Card"
+    optional: true
+- extendedWaitUntil:
+    visible: "Select"
+    timeout: 10000
+    optional: true
+- tapOn:
+    text: "Select"
+    index: 0
+    optional: true
+- tapOn:
+    text: "Mark at 0:00"
+    optional: true
+
+# Card 3: advance and match
+- tapOn:
+    text: "Next Card"
+    optional: true
+- extendedWaitUntil:
+    visible: "Select"
+    timeout: 10000
+    optional: true
+- tapOn:
+    text: "Select"
+    index: 0
+    optional: true
+- tapOn:
+    text: "Mark at 0:00"
+    optional: true
+
+# Go back to deck list
+- back
+- back
