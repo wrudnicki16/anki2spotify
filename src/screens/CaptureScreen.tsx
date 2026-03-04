@@ -14,6 +14,7 @@ import {
   insertTimestamp,
   getTimestampsForCardAndTrack,
   deleteTimestamp,
+  getTimestampCountForCard,
   updateCardStatus,
   getNextPendingCard,
   getPendingCardCount,
@@ -150,6 +151,10 @@ export default function CaptureScreen({
         onPress: async () => {
           await deleteTimestamp(id);
           await loadTimestamps();
+          const remaining = await getTimestampCountForCard(cardId);
+          if (remaining === 0) {
+            await updateCardStatus(cardId, 'pending');
+          }
         },
       },
     ]);

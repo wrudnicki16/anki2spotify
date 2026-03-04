@@ -260,6 +260,15 @@ export async function deleteTimestamp(id: number): Promise<void> {
   await database.runAsync('DELETE FROM timestamps WHERE id = ?', id);
 }
 
+export async function getTimestampCountForCard(cardId: number): Promise<number> {
+  const database = await getDatabase();
+  const row: any = await database.getFirstAsync(
+    'SELECT COUNT(*) as count FROM timestamps WHERE card_id = ?',
+    cardId
+  );
+  return row?.count ?? 0;
+}
+
 // --- Review mode helpers ---
 
 export async function getNextPendingCard(
