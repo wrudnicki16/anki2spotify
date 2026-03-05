@@ -39,7 +39,7 @@ appId: host.exp.exponent
 
 # Clear and type custom playlist name
 - tapOn: "Enter playlist name"
-- eraseText: 50
+- eraseText: 60
 - inputText: "My Test Playlist"
 
 # Tap "Create"

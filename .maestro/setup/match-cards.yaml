@@ -8,6 +8,18 @@ appId: host.exp.exponent
     timeout: 5000
 - openLink: "${EXPO_URL}"
 
+# Dismiss Expo Go developer menu
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 5000
+    optional: true
+- tapOn:
+    text: "Continue"
+    optional: true
+- tapOn:
+    point: "90%,35%"
+    optional: true
+
 # Connect to Spotify
 - tapOn: "Connect Spotify"
 - extendedWaitUntil:
