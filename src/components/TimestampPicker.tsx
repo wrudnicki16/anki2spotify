@@ -42,6 +42,7 @@ export default function TimestampPicker({ onSubmit, onCancel }: Props) {
           value={minutes}
           onChangeText={setMinutes}
           testID="input-minutes"
+          autoFocus
         />
         <Text style={styles.colon}>:</Text>
         <TextInput

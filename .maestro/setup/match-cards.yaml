@@ -23,13 +23,10 @@ appId: host.exp.exponent
 # Connect to Spotify
 - tapOn:
     id: "connect-spotify"
-- extendedWaitUntil:
-    visible: "Agree"
-    timeout: 10000
-    optional: true
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 2000
 - tapOn:
-    text: "Agree"
+    point: "50%,79%"
     optional: true
 
 # Navigate to first deck

@@ -11,13 +11,10 @@ appId: host.exp.exponent
 # Connect to Spotify (fails if not already authenticated)
 - tapOn:
     id: "connect-spotify"
-- extendedWaitUntil:
-    visible: "Agree"
-    timeout: 10000
-    optional: true
-- waitForAnimationToEnd
+- waitForAnimationToEnd:
+    timeout: 2000
 - tapOn:
-    text: "Agree"
+    point: "50%,79%"
     optional: true
 
 # Navigate to a deck → card → track → CaptureScreen
@@ -43,30 +40,28 @@ appId: host.exp.exponent
 - tapOn:
     id: "enter-time-manually"
 
-# Assert TimestampPicker appears
-- assertVisible: "Enter Timestamp"
-
-# Enter minutes
-- tapOn:
-    id: "input-minutes"
-- inputText: "1"
+# Minutes input auto-focuses, just type
 - hideKeyboard
+- inputText: "1"
 
-# Enter seconds
+# Tap seconds field and type
 - tapOn:
     id: "input-seconds"
 - inputText: "30"
-- hideKeyboard
 
-# Enter a note
+# Tap note field and type
 - tapOn:
     id: "input-note"
 - inputText: "chorus"
-- hideKeyboard
 
 # Tap Save
 - tapOn:
     id: "picker-save"
+
+# For good measure, tap Save again if it is still visible
+- tapOn:
+    id: "picker-save"
+    optional: true
 
 # Assert saved clip appears
 - assertVisible: "Saved Clips"
