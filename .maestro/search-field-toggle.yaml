@@ -5,25 +5,29 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Assert search field section
 - assertVisible: "Search by:"
 
 # Tap Front pill
-- tapOn: "Front"
+- tapOn:
+    id: "filter-front"
 
 # Tap Back pill
-- tapOn: "Back"
+- tapOn:
+    id: "filter-back"
 
 # Tap Lyrics pill to toggle on
-- tapOn: "Lyrics"
+- tapOn:
+    id: "filter-lyrics"
 
 # Tap Lyrics pill again to toggle off
-- tapOn: "Lyrics"
+- tapOn:
+    id: "filter-lyrics"

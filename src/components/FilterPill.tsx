@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { Pressable, Text, StyleSheet } from 'react-native';
 import { colors } from '../constants/colors';
 
 interface FilterPillProps {
@@ -10,15 +10,17 @@ interface FilterPillProps {
 
 export default function FilterPill({ label, active, onPress }: FilterPillProps) {
   return (
-    <TouchableOpacity
-      testID="filter-pill"
+    <Pressable
+      testID={`filter-${label.toLowerCase()}`}
+      accessibilityLabel={label}
+      accessibilityRole="button"
       style={[styles.pill, active && styles.pillActive]}
       onPress={onPress}
     >
       <Text style={[styles.text, active && styles.textActive]}>
         {label}
       </Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 

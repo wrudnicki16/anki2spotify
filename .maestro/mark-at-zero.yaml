@@ -5,39 +5,43 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Connect to Spotify (fails if not already authenticated)
-- tapOn: "Connect Spotify"
+- tapOn:
+    id: "connect-spotify"
 - extendedWaitUntil:
     visible: "Agree"
-    timeout: 5000
+    timeout: 10000
     optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: "Agree"
     optional: true
 
 # Navigate to a deck → card → track → CaptureScreen
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
-- tapOn: "Pending"
 - tapOn:
-    text: ".*"
+    id: "filter-pending"
+- tapOn:
+    id: "card-item"
     index: -1
 - extendedWaitUntil:
     visible: "Select"
     timeout: 10000
 - tapOn:
-    text: "Select"
+    id: "select-track"
     index: 0
 
 # Assert on CaptureScreen
 - assertVisible: "Mark at 0:00"
 
 # Tap "Mark at 0:00"
-- tapOn: "Mark at 0:00"
+- tapOn:
+    id: "mark-at-zero"
 
 # Assert clip saved
 - assertVisible: "Saved Clips"

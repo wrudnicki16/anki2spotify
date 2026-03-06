@@ -3,7 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
@@ -44,20 +44,23 @@ function AppContent() {
             <View style={styles.authRow}>
               <View style={styles.connectedDot} />
               <Text style={styles.authText}>Spotify Connected</Text>
-              <TouchableOpacity onPress={logout}>
+              <Pressable onPress={logout} accessibilityLabel="Logout" accessibilityRole="button" testID="logout">
                 <Text style={styles.logoutText}>Logout</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           ) : (
-            <TouchableOpacity
+            <Pressable
               style={[styles.loginButton, !isReady && styles.loginButtonDisabled]}
               onPress={login}
               disabled={!isReady}
+              accessibilityLabel="Connect Spotify"
+              accessibilityRole="button"
+              testID="connect-spotify"
             >
               <Text style={styles.loginText}>
                 {isReady ? 'Connect Spotify' : 'Loading...'}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
 

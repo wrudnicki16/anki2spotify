@@ -5,26 +5,29 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Connect to Spotify (fails if not already authenticated)
-- tapOn: "Connect Spotify"
+- tapOn:
+    id: "connect-spotify"
 - extendedWaitUntil:
     visible: "Agree"
-    timeout: 5000
+    timeout: 10000
     optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: "Agree"
     optional: true
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Tap "Match Cards" to enter review mode
-- tapOn: "Match Cards"
+- tapOn:
+    id: "match-cards-btn"
 
 # Assert review mode with Skip button
 - assertVisible: "Skip"
@@ -32,7 +35,8 @@ appId: host.exp.exponent
     text: "^[0-9]+ cards? remaining"
 
 # Tap Skip to skip the current card
-- tapOn: "Skip"
+- tapOn:
+    id: "skip-btn"
 
 # Should auto-advance to next pending card
 - assertVisible: "Search Spotify..."

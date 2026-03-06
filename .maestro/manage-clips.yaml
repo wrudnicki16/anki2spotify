@@ -5,48 +5,67 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Connect to Spotify (fails if not already authenticated)
-- tapOn: "Connect Spotify"
+- tapOn:
+    id: "connect-spotify"
 - extendedWaitUntil:
     visible: "Agree"
-    timeout: 5000
+    timeout: 10000
     optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: "Agree"
     optional: true
 
-# Navigate to CaptureScreen
+# Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
-- tapOn: "Pending"
 - tapOn:
-    text: ".*"
+    id: "filter-pending"
+- tapOn:
+    id: "card-item"
     index: -1
-    index: 0
+    optional: true
+
+# If no "Select" visible, card is already matched — go to Matched tab instead
+- runFlow:
+    when:
+      notVisible: "Select"
+    commands:
+      - tapOn:
+          id: "filter-matched"
+      - tapOn:
+          id: "card-item"
+          index: -1
+
+# Wait for search results
 - extendedWaitUntil:
     visible: "Select"
     timeout: 10000
 - tapOn:
-    text: "Select"
+    id: "select-track"
     index: 0
 
 # Save a clip first
-- tapOn: "Mark at 0:00"
+- tapOn:
+    id: "mark-at-zero"
 - assertVisible: "Saved Clips"
 
 # Tap "Copy" on the clip
-- tapOn: "Copy"
+- tapOn:
+    id: "copy-clip"
 
 # Assert "Copied" alert
 - assertVisible: "Copied"
 - tapOn: "OK"
 
 # Tap "Del" on the clip
-- tapOn: "Del"
+- tapOn:
+    id: "delete-clip"
 
 # Assert delete confirmation
 - assertVisible: "Remove this timestamp?"

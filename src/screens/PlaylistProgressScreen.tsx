@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
 } from 'react-native';
 import { useSpotify } from '../hooks/useSpotify';
@@ -158,15 +158,18 @@ export default function PlaylistProgressScreen({
               {skipped} card{skipped !== 1 ? 's' : ''} skipped (no results found)
             </Text>
           )}
-          <TouchableOpacity style={styles.spotifyButton} onPress={handleOpenInSpotify}>
+          <Pressable style={styles.spotifyButton} onPress={handleOpenInSpotify} accessibilityLabel="Open in Spotify" accessibilityRole="button" testID="open-in-spotify">
             <Text style={styles.spotifyButtonText}>Open in Spotify</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </Pressable>
+          <Pressable
             style={styles.doneButton}
             onPress={() => navigation.popToTop()}
+            accessibilityLabel="Back to Decks"
+            accessibilityRole="button"
+            testID="back-to-decks"
           >
             <Text style={styles.doneButtonText}>Back to Decks</Text>
-          </TouchableOpacity>
+          </Pressable>
         </>
       )}
 
@@ -174,19 +177,25 @@ export default function PlaylistProgressScreen({
         <>
           <Text style={styles.errorText}>{errorMessage}</Text>
           {playlistUrl && (
-            <TouchableOpacity
+            <Pressable
               style={styles.spotifyButton}
               onPress={handleOpenInSpotify}
+              accessibilityLabel="Open in Spotify"
+              accessibilityRole="button"
+              testID="open-in-spotify"
             >
               <Text style={styles.spotifyButtonText}>Open in Spotify</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
-          <TouchableOpacity
+          <Pressable
             style={styles.doneButton}
             onPress={() => navigation.goBack()}
+            accessibilityLabel="Go Back"
+            accessibilityRole="button"
+            testID="go-back"
           >
             <Text style={styles.doneButtonText}>Go Back</Text>
-          </TouchableOpacity>
+          </Pressable>
         </>
       )}
     </View>

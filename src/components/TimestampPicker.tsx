@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
 } from 'react-native';
 import { colors } from '../constants/colors';
@@ -41,6 +41,7 @@ export default function TimestampPicker({ onSubmit, onCancel }: Props) {
           maxLength={3}
           value={minutes}
           onChangeText={setMinutes}
+          testID="input-minutes"
         />
         <Text style={styles.colon}>:</Text>
         <TextInput
@@ -51,6 +52,7 @@ export default function TimestampPicker({ onSubmit, onCancel }: Props) {
           maxLength={2}
           value={seconds}
           onChangeText={setSeconds}
+          testID="input-seconds"
         />
       </View>
       <TextInput
@@ -59,18 +61,22 @@ export default function TimestampPicker({ onSubmit, onCancel }: Props) {
         placeholderTextColor="#666"
         value={note}
         onChangeText={setNote}
+        testID="input-note"
       />
       <View style={styles.buttons}>
-        <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+        <Pressable style={styles.cancelButton} onPress={onCancel} accessibilityLabel="Cancel" accessibilityRole="button" testID="picker-cancel">
           <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={[styles.submitButton, !isValid && styles.disabled]}
           onPress={handleSubmit}
           disabled={!isValid}
+          accessibilityLabel="Save"
+          accessibilityRole="button"
+          testID="picker-save"
         >
           <Text style={styles.submitText}>Save</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
     </View>
   );

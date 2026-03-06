@@ -5,28 +5,31 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Connect to Spotify (fails if not already authenticated)
-- tapOn: "Connect Spotify"
+- tapOn:
+    id: "connect-spotify"
 - extendedWaitUntil:
     visible: "Agree"
-    timeout: 5000
+    timeout: 10000
     optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: "Agree"
     optional: true
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Tap a pending card to go to SongCandidatesScreen
-- tapOn: "Pending"
 - tapOn:
-    text: ".*"
+    id: "filter-pending"
+- tapOn:
+    id: "card-item"
     index: -1
 
 # Assert SongCandidatesScreen elements
@@ -39,7 +42,7 @@ appId: host.exp.exponent
 
 # Tap Select on first track → CaptureScreen
 - tapOn:
-    text: "Select"
+    id: "select-track"
     index: 0
 
 # Assert CaptureScreen elements

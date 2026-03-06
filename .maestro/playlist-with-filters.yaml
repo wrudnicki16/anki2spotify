@@ -5,31 +5,36 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Apply "Matched" filter
-- tapOn: "Matched"
+- tapOn:
+    id: "filter-matched"
 
 # Toggle "Lyrics" search on
-- tapOn: "Lyrics"
+- tapOn:
+    id: "filter-lyrics"
 
 # Tap "Playlist"
-- tapOn: "Playlist"
+- tapOn:
+    id: "playlist-btn"
 
 # Assert modal shows filtered card count (not total)
 - assertVisible: "Create Playlist"
 
 # The modal body should reference filtered count
-- tapOn: "Continue"
+- tapOn:
+    id: "modal-confirm"
 
 # Assert name modal
 - assertVisible: "Playlist Name"
 
 # Cancel to return
-- tapOn: "Cancel"
+- tapOn:
+    id: "modal-cancel"

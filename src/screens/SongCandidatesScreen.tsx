@@ -5,7 +5,7 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   Alert,
 } from 'react-native';
@@ -159,13 +159,14 @@ export default function SongCandidatesScreen({
           placeholderTextColor="#666"
           onSubmitEditing={() => doSearch(query)}
           returnKeyType="search"
+          testID="input-search"
         />
       </View>
 
       {reviewMode && (
-        <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
+        <Pressable style={styles.skipButton} onPress={handleSkip} accessibilityLabel="Skip" accessibilityRole="button" testID="skip-btn">
           <Text style={styles.skipButtonText}>Skip</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
 
       {loading ? (

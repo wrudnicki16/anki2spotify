@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   StyleSheet,
   Alert,
@@ -82,15 +82,18 @@ export default function ExportScreen({ route }: any) {
         {rows.length} timestamp{rows.length !== 1 ? 's' : ''} to export
       </Text>
 
-      <TouchableOpacity
+      <Pressable
         style={[styles.exportButton, exporting && styles.disabled]}
         onPress={exportCSV}
         disabled={exporting}
+        accessibilityLabel="Export CSV"
+        accessibilityRole="button"
+        testID="export-csv"
       >
         <Text style={styles.exportButtonText}>
           {exporting ? 'Exporting...' : 'Export CSV'}
         </Text>
-      </TouchableOpacity>
+      </Pressable>
 
       {rows.length > 0 && (
         <FlatList

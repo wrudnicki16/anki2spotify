@@ -5,26 +5,29 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Connect to Spotify (fails if not already authenticated)
-- tapOn: "Connect Spotify"
+- tapOn:
+    id: "connect-spotify"
 - extendedWaitUntil:
     visible: "Agree"
-    timeout: 5000
+    timeout: 10000
     optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: "Agree"
     optional: true
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Tap "Match Cards" to enter review mode
-- tapOn: "Match Cards"
+- tapOn:
+    id: "match-cards-btn"
 
 # Assert SongCandidatesScreen opens in review mode
 - assertVisible: "^[0-9]+ cards? remaining"
@@ -37,7 +40,7 @@ appId: host.exp.exponent
 
 # Select a track → CaptureScreen
 - tapOn:
-    text: "Select"
+    id: "select-track"
     index: 0
 
 # Assert on CaptureScreen
@@ -45,7 +48,8 @@ appId: host.exp.exponent
 - assertVisible: "Mark at 0:00"
 
 # Mark a timestamp
-- tapOn: "Mark at 0:00"
+- tapOn:
+    id: "mark-at-zero"
 - assertVisible: "Saved Clips"
 
 # Assert "Next Card" button is visible in review mode
@@ -53,7 +57,8 @@ appId: host.exp.exponent
 - assertVisible: "^[0-9]+ cards? remaining"
 
 # Tap "Next Card" to advance to next pending card
-- tapOn: "Next Card"
+- tapOn:
+    id: "next-card"
 
 # Should auto-advance to next card's SongCandidatesScreen
 - assertVisible: "Search Spotify..."

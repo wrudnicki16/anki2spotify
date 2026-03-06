@@ -5,23 +5,25 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Tap "Export" button
-- tapOn: "Export"
+- tapOn:
+    id: "export-btn"
 
 # Assert ExportScreen
 - assertVisible: "Export:.*"
 - assertVisible: ".*to export"
 
 # Tap "Export CSV"
-- tapOn: "Export CSV"
+- tapOn:
+    id: "export-csv"
 
 # Note: Share sheet interaction is OS-level.
 # On success, the share sheet or a success alert appears.

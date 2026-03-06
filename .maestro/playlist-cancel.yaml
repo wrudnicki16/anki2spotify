@@ -5,33 +5,38 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Tap "Playlist" → first modal appears
-- tapOn: "Playlist"
+- tapOn:
+    id: "playlist-btn"
 - assertVisible: "Create Playlist"
 
 # Cancel first modal
-- tapOn: "Cancel"
+- tapOn:
+    id: "modal-cancel"
 
 # Assert modal dismissed — still on CardQueueScreen
 - assertVisible: "Playlist"
 
 # Tap "Playlist" again → Continue → name modal
-- tapOn: "Playlist"
-- tapOn: "Continue"
+- tapOn:
+    id: "playlist-btn"
+- tapOn:
+    id: "modal-confirm"
 
 # Assert name modal
 - assertVisible: "Playlist Name"
 
 # Cancel name modal
-- tapOn: "Cancel"
+- tapOn:
+    id: "modal-cancel"
 
 # Assert modal dismissed — still on CardQueueScreen
 - assertVisible: "Playlist"

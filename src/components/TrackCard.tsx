@@ -3,7 +3,7 @@ import {
   View,
   Text,
   Image,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
 } from 'react-native';
 import { SpotifyTrack } from '../types';
@@ -47,16 +47,19 @@ export default function TrackCard({ track, onSelect, clipCount }: Props) {
         </View>
       )}
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.openButton} onPress={handleOpenInSpotify}>
+        <Pressable style={styles.openButton} onPress={handleOpenInSpotify} accessibilityLabel="Open" accessibilityRole="button" testID="open-track">
           <Text style={styles.openButtonText}>Open</Text>
-        </TouchableOpacity>
+        </Pressable>
         {onSelect && (
-          <TouchableOpacity
+          <Pressable
             style={styles.selectButton}
             onPress={() => onSelect(track)}
+            accessibilityLabel="Select"
+            accessibilityRole="button"
+            testID="select-track"
           >
             <Text style={styles.selectButtonText}>Select</Text>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </View>
       <Text style={styles.attribution}>

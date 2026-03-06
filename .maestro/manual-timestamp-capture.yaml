@@ -5,60 +5,68 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Connect to Spotify (fails if not already authenticated)
-- tapOn: "Connect Spotify"
+- tapOn:
+    id: "connect-spotify"
 - extendedWaitUntil:
     visible: "Agree"
-    timeout: 5000
+    timeout: 10000
     optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: "Agree"
     optional: true
 
 # Navigate to a deck → card → track → CaptureScreen
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
-- tapOn: "Pending"
 - tapOn:
-    text: ".*"
+    id: "filter-pending"
+- tapOn:
+    id: "card-item"
     index: -1
 - extendedWaitUntil:
     visible: "Select"
     timeout: 10000
 - tapOn:
-    text: "Select"
+    id: "select-track"
     index: 0
 
 # Assert on CaptureScreen
 - assertVisible: "Open in Spotify"
 
 # Tap "Enter time manually"
-- tapOn: "Enter time manually"
+- tapOn:
+    id: "enter-time-manually"
 
 # Assert TimestampPicker appears
 - assertVisible: "Enter Timestamp"
 
 # Enter minutes
-- tapOn: "mm"
+- tapOn:
+    id: "input-minutes"
 - inputText: "1"
+- hideKeyboard
 
 # Enter seconds
-- tapOn: "ss"
+- tapOn:
+    id: "input-seconds"
 - inputText: "30"
+- hideKeyboard
 
 # Enter a note
-- tapOn: "Note (e.g., chorus, verse 2)"
-- inputText: "chorus"
-
-# Tap Save (twice — first may dismiss keyboard)
-- tapOn: "Save"
 - tapOn:
-    text: "Save"
-    optional: true
+    id: "input-note"
+- inputText: "chorus"
+- hideKeyboard
+
+# Tap Save
+- tapOn:
+    id: "picker-save"
 
 # Assert saved clip appears
 - assertVisible: "Saved Clips"

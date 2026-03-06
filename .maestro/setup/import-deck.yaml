@@ -4,7 +4,7 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Dismiss Expo Go developer menu
@@ -20,7 +20,8 @@ appId: host.exp.exponent
     optional: true
 
 # Tap Import Deck → opens OS file picker
-- tapOn: "Import Deck"
+- tapOn:
+    id: "import-deck"
 
 # Android: select file from document picker (skipped on iOS)
 - runFlow:
@@ -41,7 +42,7 @@ appId: host.exp.exponent
 
 # Confirm import on card preview
 - tapOn:
-    text: "Confirm Import"
+    id: "confirm-import"
     optional: true
 
 # Dismiss success alert

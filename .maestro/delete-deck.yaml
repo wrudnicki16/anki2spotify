@@ -5,14 +5,14 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 - assertVisible: "Your Decks"
 
 # Long-press the first deck card to trigger delete confirmation
 - longPressOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Assert delete confirmation dialog

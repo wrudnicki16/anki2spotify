@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   FlatList,
   StyleSheet,
   Alert,
@@ -189,9 +189,9 @@ export default function DeckImportScreen({ navigation }: any) {
 
       {preview.length === 0 && !apkgResult ? (
         <>
-          <TouchableOpacity style={styles.importButton} onPress={pickFile}>
+          <Pressable style={styles.importButton} onPress={pickFile} accessibilityLabel="Import Deck" accessibilityRole="button" testID="import-deck">
             <Text style={styles.importButtonText}>Import Deck</Text>
-          </TouchableOpacity>
+          </Pressable>
 
           <Text style={styles.sectionTitle}>Your Decks</Text>
           {decks.length === 0 ? (
@@ -203,8 +203,10 @@ export default function DeckImportScreen({ navigation }: any) {
               data={decks}
               keyExtractor={(item) => item.id.toString()}
               renderItem={({ item }) => (
-                <TouchableOpacity
+                <Pressable
                   style={styles.deckCard}
+                  testID="deck-item"
+                  accessibilityRole="button"
                   onPress={() =>
                     navigation.navigate('CardQueue', {
                       deckId: item.id,
@@ -218,7 +220,7 @@ export default function DeckImportScreen({ navigation }: any) {
                   <Text style={styles.deckInfo}>
                     {item.card_count} cards
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               )}
             />
           )}
@@ -232,8 +234,10 @@ export default function DeckImportScreen({ navigation }: any) {
             data={apkgResult.decks}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <TouchableOpacity
+              <Pressable
                 style={styles.deckSelectRow}
+                testID="deck-select"
+                accessibilityRole="button"
                 onPress={() => toggleSelectDeck(item.id)}
               >
                 <View
@@ -246,28 +250,34 @@ export default function DeckImportScreen({ navigation }: any) {
                   <Text style={styles.deckName}>{item.name}</Text>
                   <Text style={styles.deckInfo}>{item.noteCount} cards</Text>
                 </View>
-              </TouchableOpacity>
+              </Pressable>
             )}
           />
           <View style={styles.previewActions}>
-            <TouchableOpacity
+            <Pressable
               style={styles.cancelButton}
               onPress={() => {
                 setApkgResult(null);
                 setSelectedDeckIds([]);
                 setFileName('');
               }}
+              accessibilityLabel="Cancel"
+              accessibilityRole="button"
+              testID="cancel-btn"
             >
               <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={styles.confirmButton}
               onPress={confirmDeckSelection}
+              accessibilityLabel="Confirm Deck Selection"
+              accessibilityRole="button"
+              testID="confirm-deck-selection"
             >
               <Text style={styles.confirmText}>
                 Import {selectedDeckIds.length} deck{selectedDeckIds.length !== 1 ? 's' : ''}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </>
       ) : (
@@ -296,25 +306,31 @@ export default function DeckImportScreen({ navigation }: any) {
             }
           />
           <View style={styles.previewActions}>
-            <TouchableOpacity
+            <Pressable
               style={styles.cancelButton}
               onPress={() => {
                 setPreview([]);
                 setFileName('');
                 setApkgDeckCards([]);
               }}
+              accessibilityLabel="Cancel"
+              accessibilityRole="button"
+              testID="cancel-btn"
             >
               <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </Pressable>
+            <Pressable
               style={[styles.confirmButton, loading && styles.disabled]}
               onPress={confirmImport}
               disabled={loading}
+              accessibilityLabel="Confirm Import"
+              accessibilityRole="button"
+              testID="confirm-import"
             >
               <Text style={styles.confirmText}>
                 {loading ? 'Importing...' : 'Confirm Import'}
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </>
       )}

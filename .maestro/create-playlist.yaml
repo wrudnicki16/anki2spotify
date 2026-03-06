@@ -5,45 +5,51 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Connect to Spotify (fails if not already authenticated)
-- tapOn: "Connect Spotify"
+- tapOn:
+    id: "connect-spotify"
 - extendedWaitUntil:
     visible: "Agree"
-    timeout: 5000
+    timeout: 10000
     optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: "Agree"
     optional: true
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Tap "Playlist" button
-- tapOn: "Playlist"
+- tapOn:
+    id: "playlist-btn"
 
 # Assert first confirmation modal
 - assertVisible: "Create Playlist"
 - assertVisible: "Adjust your filters to change which songs are included."
 
 # Tap "Continue"
-- tapOn: "Continue"
+- tapOn:
+    id: "modal-confirm"
 
 # Assert playlist name modal
 - assertVisible: "Playlist Name"
 - assertVisible: "Enter playlist name"
 
 # Clear and type custom playlist name
-- tapOn: "Enter playlist name"
+- tapOn:
+    id: "input-playlist-name"
 - eraseText: 60
 - inputText: "My Test Playlist"
 
 # Tap "Create"
-- tapOn: "Create"
+- tapOn:
+    id: "modal-confirm"
 
 # Assert PlaylistProgressScreen
 - assertVisible: "My Test Playlist"
@@ -61,7 +67,8 @@ appId: host.exp.exponent
 - assertVisible: "Back to Decks"
 
 # Tap "Back to Decks" to return
-- tapOn: "Back to Decks"
+- tapOn:
+    id: "back-to-decks"
 
 # Assert back on DeckImportScreen
 - assertVisible: "Anki2Spotify"

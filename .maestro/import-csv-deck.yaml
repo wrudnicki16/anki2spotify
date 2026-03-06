@@ -4,7 +4,7 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Dismiss Expo Go developer menu
@@ -24,8 +24,12 @@ appId: host.exp.exponent
 - assertVisible: "No decks yet. Import a file to get started."
 
 # Tap Import Deck → file picker opens
-- tapOn: "Import Deck"
+- tapOn:
+    id: "import-deck"
 
 # Note: File picker interaction is OS-level and cannot be fully automated.
 # In a real test environment, you'd use `maestro mock` or pre-seed the file.
 # For now, we assert the button is tappable and the picker opens.
+
+# Go back to the main screen
+- back

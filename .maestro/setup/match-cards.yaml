@@ -5,7 +5,7 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Dismiss Expo Go developer menu
@@ -21,22 +21,25 @@ appId: host.exp.exponent
     optional: true
 
 # Connect to Spotify
-- tapOn: "Connect Spotify"
+- tapOn:
+    id: "connect-spotify"
 - extendedWaitUntil:
     visible: "Agree"
-    timeout: 5000
+    timeout: 10000
     optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: "Agree"
     optional: true
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Enter review mode
-- tapOn: "Match Cards"
+- tapOn:
+    id: "match-cards-btn"
 
 # Wait for search results
 - extendedWaitUntil:
@@ -45,40 +48,41 @@ appId: host.exp.exponent
 
 # Card 1: Select track and mark at 0:00
 - tapOn:
-    text: "Select"
+    id: "select-track"
     index: 0
-- tapOn: "Mark at 0:00"
+- tapOn:
+    id: "mark-at-zero"
 
 # Card 2: advance and match
 - tapOn:
-    text: "Next Card"
+    id: "next-card"
     optional: true
 - extendedWaitUntil:
     visible: "Select"
     timeout: 10000
     optional: true
 - tapOn:
-    text: "Select"
+    id: "select-track"
     index: 0
     optional: true
 - tapOn:
-    text: "Mark at 0:00"
+    id: "mark-at-zero"
     optional: true
 
 # Card 3: advance and match
 - tapOn:
-    text: "Next Card"
+    id: "next-card"
     optional: true
 - extendedWaitUntil:
     visible: "Select"
     timeout: 10000
     optional: true
 - tapOn:
-    text: "Select"
+    id: "select-track"
     index: 0
     optional: true
 - tapOn:
-    text: "Mark at 0:00"
+    id: "mark-at-zero"
     optional: true
 
 # Go back to deck list

@@ -3,7 +3,7 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
   TextInput,
   Alert,
@@ -123,26 +123,35 @@ export default function CardQueueScreen({ route, navigation }: any) {
     <View style={styles.container}>
       <View style={styles.headerRow}>
         <Text style={styles.title}>{deckName}</Text>
-        <TouchableOpacity
+        <Pressable
           style={styles.playlistButton}
           onPress={handleCreatePlaylist}
+          accessibilityLabel="Playlist"
+          accessibilityRole="button"
+          testID="playlist-btn"
         >
           <Text style={styles.playlistButtonText}>Playlist</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={styles.matchButton}
           onPress={handleStartMatchCards}
+          accessibilityLabel="Match Cards"
+          accessibilityRole="button"
+          testID="match-cards-btn"
         >
           <Text style={styles.matchButtonText}>Match Cards</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={styles.exportButton}
           onPress={() =>
             navigation.navigate('Export', { deckId, deckName })
           }
+          accessibilityLabel="Export"
+          accessibilityRole="button"
+          testID="export-btn"
         >
           <Text style={styles.exportText}>Export</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       <View style={styles.filterRow}>
@@ -170,8 +179,11 @@ export default function CardQueueScreen({ route, navigation }: any) {
           data={displayedCards}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity
+            <Pressable
               style={styles.cardItem}
+              accessibilityLabel={`${item.front}, ${item.back}`}
+              accessibilityRole="button"
+              testID="card-item"
               onPress={async () => {
                 if (item.status === 'matched') {
                   const row = await getTrackForCard(item.id);
@@ -216,7 +228,7 @@ export default function CardQueueScreen({ route, navigation }: any) {
                   { backgroundColor: statusColor(item.status) },
                 ]}
               />
-            </TouchableOpacity>
+            </Pressable>
           )}
         />
       )}
@@ -253,6 +265,7 @@ export default function CardQueueScreen({ route, navigation }: any) {
           autoFocus
           onSubmitEditing={handleSubmitPlaylistName}
           returnKeyType="done"
+          testID="input-playlist-name"
         />
       </ConfirmationModal>
     </View>

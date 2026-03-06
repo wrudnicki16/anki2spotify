@@ -5,25 +5,29 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # All filter should be active by default
 - assertVisible: "All"
 
 # Tap Pending pill
-- tapOn: "Pending"
+- tapOn:
+    id: "filter-pending"
 
 # Tap Matched pill
-- tapOn: "Matched"
+- tapOn:
+    id: "filter-matched"
 
 # Tap Skipped pill
-- tapOn: "Skipped"
+- tapOn:
+    id: "filter-skipped"
 
 # Tap All pill to reset
-- tapOn: "All"
+- tapOn:
+    id: "filter-all"

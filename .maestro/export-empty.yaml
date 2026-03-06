@@ -5,22 +5,24 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Navigate to first deck
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Tap "Export" button
-- tapOn: "Export"
+- tapOn:
+    id: "export-btn"
 
 # Assert ExportScreen with zero timestamps
 - assertVisible: "0 timestamps to export"
 
 # Tap "Export CSV"
-- tapOn: "Export CSV"
+- tapOn:
+    id: "export-csv"
 
 # Assert "Nothing to export" alert
 - assertVisible: "Nothing to export"

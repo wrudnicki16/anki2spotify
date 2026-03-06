@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   ScrollView,
   StyleSheet,
   Alert,
@@ -222,38 +222,47 @@ export default function CaptureScreen({
       </View>
 
       {/* Actions */}
-      <TouchableOpacity style={styles.openButton} onPress={handleOpenInSpotify}>
+      <Pressable style={styles.openButton} onPress={handleOpenInSpotify} accessibilityLabel="Open in Spotify" accessibilityRole="button" testID="open-in-spotify">
         <Text style={styles.openButtonText}>Open in Spotify</Text>
-      </TouchableOpacity>
+      </Pressable>
 
       <View style={styles.captureRow}>
-        <TouchableOpacity
+        <Pressable
           style={[styles.captureButton, { flex: 1 }]}
           onPress={handleAutoCapture}
+          accessibilityLabel="Mark Timestamp"
+          accessibilityRole="button"
+          testID="mark-timestamp"
         >
           <Text style={styles.captureButtonText}>Mark Timestamp</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </Pressable>
+        <Pressable
           style={styles.markZeroButton}
           onPress={handleMarkAtZero}
+          accessibilityLabel="Mark at 0:00"
+          accessibilityRole="button"
+          testID="mark-at-zero"
         >
           <Text style={styles.markZeroButtonText}>Mark at 0:00</Text>
-        </TouchableOpacity>
+        </Pressable>
       </View>
 
       {autoStatus ? (
         <Text style={styles.statusText}>{autoStatus}</Text>
       ) : null}
 
-      <TouchableOpacity
+      <Pressable
         style={styles.manualLink}
         onPress={() => setShowManual(true)}
+        accessibilityLabel="Enter time manually"
+        accessibilityRole="button"
+        testID="enter-time-manually"
       >
         <Text style={styles.manualLinkText}>Enter time manually</Text>
-      </TouchableOpacity>
+      </Pressable>
 
       {searchField ? (
-        <TouchableOpacity
+        <Pressable
           style={styles.manualLink}
           onPress={() =>
             navigation.navigate('SongCandidates', {
@@ -264,15 +273,18 @@ export default function CaptureScreen({
               ...reviewParams,
             })
           }
+          accessibilityLabel="Search for different track"
+          accessibilityRole="button"
+          testID="search-different-track"
         >
           <Text style={styles.manualLinkText}>Search for different track</Text>
-        </TouchableOpacity>
+        </Pressable>
       ) : null}
 
       {reviewMode && timestamps.length > 0 && (
-        <TouchableOpacity style={styles.nextCardButton} onPress={handleNextCard}>
+        <Pressable style={styles.nextCardButton} onPress={handleNextCard} accessibilityLabel="Next Card" accessibilityRole="button" testID="next-card">
           <Text style={styles.nextCardButtonText}>Next Card</Text>
-        </TouchableOpacity>
+        </Pressable>
       )}
 
       {reviewMode && pendingCount != null && (
@@ -304,21 +316,27 @@ export default function CaptureScreen({
                 </Text>
               </View>
               <View style={styles.tsActions}>
-                <TouchableOpacity
+                <Pressable
                   onPress={() => copyTimestamp(item.progress_ms)}
+                  accessibilityLabel="Copy"
+                  accessibilityRole="button"
+                  testID="copy-clip"
                 >
                   <Text style={styles.tsActionText}>Copy</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </Pressable>
+                <Pressable
                   onPress={() => handleJump(item.progress_ms)}
+                  accessibilityLabel="Jump"
+                  accessibilityRole="button"
+                  testID="jump-clip"
                 >
                   <Text style={styles.tsActionText}>Jump</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                </Pressable>
+                <Pressable onPress={() => handleDelete(item.id)} accessibilityLabel="Del" accessibilityRole="button" testID="delete-clip">
                   <Text style={[styles.tsActionText, { color: colors.danger }]}>
                     Del
                   </Text>
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           ))}

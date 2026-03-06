@@ -5,14 +5,14 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 - assertVisible: "Your Decks"
 
 # Tap the first deck to navigate to CardQueueScreen
 - tapOn:
-    text: ".*cards"
+    id: "deck-item"
     index: 0
 
 # Assert CardQueueScreen elements

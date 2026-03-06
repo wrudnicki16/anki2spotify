@@ -3,7 +3,7 @@ import {
   Modal,
   View,
   Text,
-  TouchableOpacity,
+  Pressable,
   StyleSheet,
 } from 'react-native';
 import { colors } from '../constants/colors';
@@ -32,12 +32,12 @@ export default function ConfirmationModal({
           <Text style={styles.title}>{title}</Text>
           {children}
           <View style={styles.buttons}>
-            <TouchableOpacity style={styles.cancel} onPress={onCancel}>
+            <Pressable style={styles.cancel} onPress={onCancel} accessibilityLabel="Cancel" accessibilityRole="button" testID="modal-cancel">
               <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.confirm} onPress={onConfirm}>
+            </Pressable>
+            <Pressable style={styles.confirm} onPress={onConfirm} accessibilityLabel={confirmLabel} accessibilityRole="button" testID="modal-confirm">
               <Text style={styles.confirmText}>{confirmLabel}</Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </View>

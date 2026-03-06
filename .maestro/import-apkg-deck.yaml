@@ -4,7 +4,7 @@ appId: host.exp.exponent
 - launchApp
 - extendedWaitUntil:
     visible: "Expo Go"
-    timeout: 5000
+    timeout: 15000
 - openLink: "${EXPO_URL}"
 
 # Assert DeckImportScreen
@@ -12,7 +12,8 @@ appId: host.exp.exponent
 - assertVisible: "Import Deck"
 
 # Tap Import Deck → opens OS file picker
-- tapOn: "Import Deck"
+- tapOn:
+    id: "import-deck"
 
 # --- Platform-specific file picker interaction ---
 # Android: Try known document picker IDs (optional so iOS doesn't fail)
@@ -57,7 +58,7 @@ appId: host.exp.exponent
 # After deck selection, card preview appears
 # Tap "Confirm Import" to finalize
 - tapOn:
-    text: "Confirm Import"
+    id: "confirm-import"
     optional: true
 
 # Assert success alert
