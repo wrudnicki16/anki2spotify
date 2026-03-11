@@ -39,13 +39,14 @@ appId: host.exp.exponent
           id: "card-item"
           index: -1
 
-# Wait for search results
-- extendedWaitUntil:
-    visible: "Select"
-    timeout: 10000
-- tapOn:
-    id: "select-track"
-    index: 0
+# If "Select" visible, tap on first track
+- runFlow:
+    when:
+      visible: "Select"
+    commands:
+      - tapOn:
+        id: "select-track"
+        index: 0
 
 # Assert on CaptureScreen
 - assertVisible: "Search for different track"

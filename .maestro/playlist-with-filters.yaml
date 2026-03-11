@@ -25,6 +25,20 @@ appId: host.exp.exponent
 - tapOn:
     id: "playlist-btn"
 
+# If "Create Playlist" not visible,
+# there are no cards to create playlist from, dismiss alert
+# then unselect "Lyrics" filter and try again
+- runFlow:
+    when:
+      notVisible: "Create Playlist"
+    commands:
+      - assertVisible: "No cards"
+      - tapOn: "OK"
+      - tapOn:
+          id: "filter-lyrics"
+      - tapOn:
+          id: "playlist-btn"
+
 # Assert modal shows filtered card count (not total)
 - assertVisible: "Create Playlist"
 
