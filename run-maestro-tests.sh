@@ -32,12 +32,31 @@ NC='\033[0m'
 PASSED=0
 FAILED=0
 FAILURES=""
+TIMINGS=""
 
 add_failure() {
   if [[ -n "$FAILURES" ]]; then
     FAILURES="$FAILURES|$1"
   else
     FAILURES="$1"
+  fi
+}
+
+add_timing() {
+  local entry="$1"
+  if [[ -n "$TIMINGS" ]]; then
+    TIMINGS="$TIMINGS|$entry"
+  else
+    TIMINGS="$entry"
+  fi
+}
+
+format_duration() {
+  local secs="$1"
+  if (( secs >= 60 )); then
+    printf "%dm%02ds" $((secs / 60)) $((secs % 60))
+  else
+    printf "%ds" "$secs"
   fi
 }
 
@@ -64,7 +83,7 @@ run_flow() {
   local flow_path="$1"
   local label="$2"
   echo -e "  ${CYAN}▶${NC} $label"
-  if maestro test -e EXPO_URL="$EXPO_URL" "$flow_path"; then
+  if maestro-runner test -e EXPO_URL="$EXPO_URL" "$flow_path"; then
     return 0
   else
     return 1
@@ -88,21 +107,27 @@ run_test() {
     echo -e "  ${RED}✗${NC} Test flow not found: $flow_path"
     FAILED=$((FAILED + 1))
     add_failure "$test_name (not found)"
+    add_timing "$test_name:0:fail"
     return 1
   fi
+  local start_time=$SECONDS
   if run_flow "$flow_path" "$test_name"; then
-    echo -e "  ${GREEN}✓${NC} $test_name"
+    local duration=$((SECONDS - start_time))
+    echo -e "  ${GREEN}✓${NC} $test_name ($(format_duration $duration))"
     PASSED=$((PASSED + 1))
+    add_timing "$test_name:$duration:pass"
   else
-    echo -e "  ${RED}✗${NC} $test_name"
+    local duration=$((SECONDS - start_time))
+    echo -e "  ${RED}✗${NC} $test_name ($(format_duration $duration))"
     FAILED=$((FAILED + 1))
     add_failure "$test_name"
+    add_timing "$test_name:$duration:fail"
   fi
 }
 
 clear_state() {
   echo -e "  ${YELLOW}⟳${NC} Clearing app state..."
-  maestro test "$SETUP_DIR/clear-state.yaml" > /dev/null 2>&1 || true
+  maestro-runner test "$SETUP_DIR/clear-state.yaml" > /dev/null 2>&1 || true
 }
 
 run_group() {
@@ -152,6 +177,27 @@ print_summary() {
   echo -e "  Total:  $total"
   echo -e "  ${GREEN}Passed: $PASSED${NC}"
   echo -e "  ${RED}Failed: $FAILED${NC}"
+
+  if [[ -n "$TIMINGS" ]]; then
+    echo ""
+    echo -e "${BOLD}Timings:${NC}"
+    local total_secs=0
+    IFS='|' read -r -a TIMING_LIST <<< "$TIMINGS"
+    for entry in "${TIMING_LIST[@]}"; do
+      local name="${entry%%:*}"
+      local rest="${entry#*:}"
+      local secs="${rest%%:*}"
+      local status="${rest#*:}"
+      total_secs=$((total_secs + secs))
+      if [[ "$status" == "pass" ]]; then
+        echo -e "  ${GREEN}✓${NC} $(format_duration $secs)  $name"
+      else
+        echo -e "  ${RED}✗${NC} $(format_duration $secs)  $name"
+      fi
+    done
+    echo -e "  ────────────"
+    echo -e "  ${BOLD}$(format_duration $total_secs)  total${NC}"
+  fi
 
   if [[ -n "$FAILURES" ]]; then
     echo ""
