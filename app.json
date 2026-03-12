@@ -30,7 +30,14 @@
     },
     "plugins": [
       "expo-web-browser",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "@sentry/react-native/expo",
+        {
+          "organization": "YOUR_SENTRY_ORG",
+          "project": "YOUR_SENTRY_PROJECT"
+        }
+      ]
     ]
   }
 }
