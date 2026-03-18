@@ -1,0 +1,150 @@
+appId: host.exp.exponent
+---
+
+# Playlist Creation Flow - Track saving and deduplication
+# Prerequisites: Spotify connected, at least one deck with cards
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Connect to Spotify (fails if not already authenticated)
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+
+- assertVisible: "Anki2Spotify"
+
+# Enter first deck
+- tapOn:
+    id: "deck-item"
+    index: 0
+
+# Tap Playlist button
+- tapOn:
+    id: "playlist-btn"
+
+# Confirm playlist creation
+- assertVisible: "Create Playlist"
+- tapOn: "Continue"
+
+# Enter playlist name
+- assertVisible: "Playlist Name"
+- tapOn:
+    id: "input-playlist-name"
+- eraseText: 100
+- inputText:
+    id: "input-playlist-name"
+    text: "Test Playlist"
+- tapOn: "Create"
+
+# Wait for playlist creation to complete
+- extendedWaitUntil:
+    visible:
+      text: "Playlist created"
+    timeout: 30000
+
+# Verify success
+- assertVisible: "Play in Spotify"
+- assertVisible:
+    id: "back-to-decks"
+
+# Go back to decks
+- tapOn:
+    id: "back-to-decks"
+- assertVisible: "Anki2Spotify"
+
+# --- Play a song from the created playlist via Spotify ---
+
+# Enter the first deck
+- tapOn:
+    id: "deck-item"
+    index: 0
+
+# Tap the first card
+- tapOn:
+    id: "card-item"
+    index: 0
+
+# On Find Songs screen, tap Play to open Spotify
+- tapOn:
+    id: "open-track"
+
+# Spotify web opens - if "Continue" dialog appears, tap it
+- tapOn:
+    text: "Continue"
+    optional: true
+
+# Wait for the mini player bar to appear at the bottom
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap the mini player bar to open full player view
+- tapOn:
+    point: "40%,88%"
+    optional: true
+
+# Wait for full player to open
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Tap the devices icon (bottom-left of the player screen)
+- tapOn:
+    point: "10%,96%"
+    optional: true
+
+# Wait for device picker to appear
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# If device picker appears, pick the second device (first non-"This Web Browser" option)
+- tapOn:
+    point: "50%,55%"
+    optional: true
+
+# Wait for device to connect
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Close the device picker (X button top-left)
+- tapOn:
+    point: "7%,18%"
+    optional: true
+
+# Tap play button (center of player controls)
+- tapOn:
+    point: "50%,90%"
+    optional: true
+
+# Wait for playback to start
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Navigate back to the app
+- back
+
+# Back on Find Songs screen
+- back
+
+# Back on CardQueue screen
+- assertVisible: "Filters"
+
+# Tap the Now Playing (musical note) button
+- tapOn:
+    id: "now-playing-btn"
+
+# Wait for track to load
+- extendedWaitUntil:
+    visible:
+      id: "play-pause"
+    timeout: 5000
+
+# Assert that Retry button does NOT exist (track is playing)
+- assertNotVisible:
+    id: "retry-btn"
