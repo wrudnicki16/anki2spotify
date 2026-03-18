@@ -32,9 +32,7 @@ export default function AppNavigator({ accessToken }: Props) {
       <Stack.Screen
         name="CardQueue"
         component={CardQueueScreen}
-        options={({ route }: any) => ({
-          title: route.params?.deckName || 'Cards',
-        })}
+        options={{ title: 'Cards' }}
       />
       <Stack.Screen
         name="SongCandidates"

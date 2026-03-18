@@ -122,8 +122,8 @@ export default function CardQueueScreen({ route, navigation }: any) {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>{deckName}</Text>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>{deckName}</Text>
         <Pressable
           style={styles.nowPlayingButton}
           onPress={() =>
@@ -142,6 +142,7 @@ export default function CardQueueScreen({ route, navigation }: any) {
           accessibilityRole="button"
           testID="playlist-btn"
         >
+          <Ionicons name="add" size={16} color={colors.textPrimary} style={{ marginRight: 4 }} />
           <Text style={styles.playlistButtonText}>Playlist</Text>
         </Pressable>
         <Pressable
@@ -151,7 +152,8 @@ export default function CardQueueScreen({ route, navigation }: any) {
           accessibilityRole="button"
           testID="match-cards-btn"
         >
-          <Text style={styles.matchButtonText}>Match Cards</Text>
+          <Ionicons name="layers" size={14} color={colors.textPrimary} style={{ marginRight: 4 }} />
+          <Text style={styles.matchButtonText}>Match</Text>
         </Pressable>
         <Pressable
           style={styles.exportButton}
@@ -162,10 +164,12 @@ export default function CardQueueScreen({ route, navigation }: any) {
           accessibilityRole="button"
           testID="export-btn"
         >
+          <Ionicons name="download-outline" size={14} color={colors.textPrimary} style={{ marginRight: 4 }} />
           <Text style={styles.exportText}>Export</Text>
         </Pressable>
       </View>
 
+      <Text style={styles.sectionLabel}>Filters</Text>
       <View style={styles.filterRow}>
         {filters.map((f) => (
           <FilterPill
@@ -288,23 +292,34 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 16,
   },
   headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 8,
   },
   title: {
     color: colors.textPrimary,
     fontSize: 22,
     fontWeight: '700',
-    flex: 1,
+    marginBottom: 6,
+  },
+  sectionLabel: {
+    color: colors.textSecondary,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
   },
   exportButton: {
     backgroundColor: colors.buttonSecondary,
-    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
   },
@@ -363,10 +378,11 @@ const styles = StyleSheet.create({
   },
   playlistButton: {
     backgroundColor: colors.spotifyGreen,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    marginRight: 8,
   },
   playlistButtonText: {
     color: colors.textPrimary,
@@ -382,10 +398,11 @@ const styles = StyleSheet.create({
   },
   matchButton: {
     backgroundColor: colors.danger,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    marginRight: 8,
   },
   matchButtonText: {
     color: colors.textPrimary,
