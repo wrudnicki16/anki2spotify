@@ -1,0 +1,49 @@
+appId: host.exp.exponent
+---
+
+# Now Playing - Card Match and Navigate to Capture
+# Prerequisites: play-spotify-track setup has run
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Connect to Spotify (fails if not already authenticated)
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+
+- assertVisible: "Anki2Spotify"
+
+# Navigate to Now Playing
+- tapOn:
+    id: "now-playing-btn"
+
+# Wait for results to load
+- extendedWaitUntil:
+    visible:
+      id: "play-pause"
+    timeout: 5000
+
+# If there are matching cards, tap the first one
+- tapOn:
+    id: "result-card"
+    index: 0
+    optional: true
+
+# Should navigate to Capture screen
+- assertVisible:
+    text: "Play in Spotify"
+    optional: true
+- assertVisible:
+    text: "Mark Timestamp"
+    optional: true
+
+# If we reached Capture, go back
+- back

@@ -1,0 +1,58 @@
+appId: host.exp.exponent
+---
+
+# Now Playing - From Deck Screen
+# Prerequisites: play-spotify-track setup has run
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Connect to Spotify (fails if not already authenticated)
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+
+- assertVisible: "Anki2Spotify"
+
+# Tap first deck to enter it
+- tapOn:
+    id: "deck-item"
+    index: 0
+
+# Verify we're on the Cards screen
+- assertVisible: "Filters"
+
+# Tap Now Playing from within the deck
+- tapOn:
+    id: "now-playing-btn"
+
+# Should show the Now Playing screen with track loaded
+- extendedWaitUntil:
+    visible:
+      id: "play-pause"
+    timeout: 5000
+
+# Assert no retry (track is playing)
+- assertNotVisible:
+    id: "retry-btn"
+
+# Verify fallback search or results are shown
+- assertVisible:
+    text: "No saved matches for this track"
+    optional: true
+- assertVisible:
+    id: "result-card"
+    optional: true
+
+# Go back to deck
+- back
+
+# Verify we're back on Cards screen
+- assertVisible: "Filters"

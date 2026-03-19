@@ -71,11 +71,15 @@ group_def() {
     skip)         echo "import-deck|skip-card-review" ;;
     playlist)     echo "import-deck,match-cards|create-playlist,playlist-with-filters,export-csv" ;;
     destructive)  echo "import-deck|delete-deck" ;;
+    now-playing)  echo "import-deck,play-spotify-track|now-playing-flow,now-playing-controls,now-playing-from-deck,now-playing-card-match,now-playing-fallback-search" ;;
+    now-playing-no-music) echo "import-deck|now-playing-no-playback" ;;
+    filters)      echo "import-deck|saved-filters" ;;
+    playlist-new) echo "import-deck|playlist-creation" ;;
     *) return 1 ;;
   esac
 }
 
-ALL_GROUPS="fresh-app navigation capture match skip playlist destructive"
+ALL_GROUPS="fresh-app navigation capture match skip playlist destructive now-playing now-playing-no-music filters playlist-new"
 
 # ── Helpers ──
 

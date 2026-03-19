@@ -1,0 +1,71 @@
+appId: host.exp.exponent
+---
+
+# Now Playing - Playback Controls (pause, next, previous)
+# Prerequisites: play-spotify-track setup has run
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Connect to Spotify (fails if not already authenticated)
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+
+- assertVisible: "Anki2Spotify"
+
+# Navigate to Now Playing
+- tapOn:
+    id: "now-playing-btn"
+
+# Wait for track to load
+- extendedWaitUntil:
+    visible:
+      id: "play-pause"
+    timeout: 5000
+
+# Test pause
+- tapOn:
+    id: "play-pause"
+- waitForAnimationToEnd:
+    timeout: 2000
+- assertVisible:
+    id: "play-pause"
+
+# Test resume
+- tapOn:
+    id: "play-pause"
+- waitForAnimationToEnd:
+    timeout: 2000
+- assertVisible:
+    id: "play-pause"
+
+# Test next track (only works with playlist context)
+- tapOn:
+    id: "next-track"
+
+# Wait for track to update
+- extendedWaitUntil:
+    visible:
+      id: "open-track-in-spotify"
+    timeout: 3000
+
+# Test previous track
+- tapOn:
+    id: "previous-track"
+
+# Wait for track to update
+- extendedWaitUntil:
+    visible:
+      id: "open-track-in-spotify"
+    timeout: 3000
+
+# Go back
+- back

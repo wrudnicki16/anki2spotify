@@ -1,0 +1,48 @@
+appId: host.exp.exponent
+---
+
+# Now Playing - Core Flow
+# Prerequisites: play-spotify-track setup has run
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Connect to Spotify (fails if not already authenticated)
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+
+- assertVisible: "Anki2Spotify"
+
+# Tap Now Playing from home screen
+- tapOn:
+    id: "now-playing-btn"
+
+# Wait for track to load
+- extendedWaitUntil:
+    visible:
+      id: "play-pause"
+    timeout: 5000
+
+# Assert that Retry button does NOT exist (track is playing)
+- assertNotVisible:
+    id: "retry-btn"
+
+# Verify playback controls exist
+- assertVisible:
+    id: "play-pause"
+- assertVisible:
+    id: "previous-track"
+- assertVisible:
+    id: "next-track"
+
+# Verify track info is tappable
+- assertVisible:
+    id: "open-track-in-spotify"

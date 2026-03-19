@@ -1,0 +1,98 @@
+appId: host.exp.exponent
+---
+# Setup: Play a song via Spotify so playback is active for Now Playing tests
+# Prerequisites: Spotify authenticated, at least one deck imported with cards
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Connect to Spotify (fails if not already authenticated)
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+
+- assertVisible: "Anki2Spotify"
+
+# Enter the first deck
+- tapOn:
+    id: "deck-item"
+    index: 0
+
+# Tap the first card
+- tapOn:
+    id: "card-item"
+    index: 0
+
+# On Find Songs screen, tap Play to open Spotify
+- tapOn:
+    id: "open-track"
+
+# Spotify web opens - if "Continue" dialog appears, tap it
+- tapOn:
+    text: "Continue"
+    optional: true
+
+# Wait for the mini player bar to appear at the bottom
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Tap the mini player bar to open full player view
+- tapOn:
+    point: "40%,88%"
+    optional: true
+
+# Wait for full player to open
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Tap the devices icon (bottom-left of the player screen)
+- tapOn:
+    point: "10%,96%"
+    optional: true
+
+# Wait for device picker to appear
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# If device picker appears, pick the second device (first non-"This Web Browser" option)
+- tapOn:
+    point: "50%,55%"
+    optional: true
+
+# Wait for device to connect
+- waitForAnimationToEnd:
+    timeout: 2000
+
+# Close the device picker (X button top-left)
+- tapOn:
+    point: "7%,18%"
+    optional: true
+
+# Tap play button (center of player controls)
+- tapOn:
+    point: "50%,90%"
+    optional: true
+
+# Wait for playback to start
+- waitForAnimationToEnd:
+    timeout: 3000
+
+# Navigate back to the app
+- back
+
+# Back on Find Songs screen
+- back
+
+# Back on CardQueue screen
+- assertVisible: "Filters"
+
+# Back to home
+- back
+- assertVisible: "Anki2Spotify"

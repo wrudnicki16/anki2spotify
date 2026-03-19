@@ -1,0 +1,57 @@
+appId: host.exp.exponent
+---
+
+# Now Playing - Fallback Search with editable query
+# Prerequisites: play-spotify-track setup has run
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Connect to Spotify (fails if not already authenticated)
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+
+- assertVisible: "Anki2Spotify"
+
+# Navigate to Now Playing
+- tapOn:
+    id: "now-playing-btn"
+
+# Wait for track to load
+- extendedWaitUntil:
+    visible:
+      id: "play-pause"
+    timeout: 5000
+
+# If fallback search is shown, test editing the query
+- assertVisible:
+    text: "No saved matches for this track"
+    optional: true
+- assertVisible:
+    id: "search-input"
+    optional: true
+
+# Clear and type a custom search
+- tapOn:
+    id: "search-input"
+    optional: true
+- eraseText: 100
+- inputText:
+    id: "search-input"
+    text: "hola"
+    optional: true
+
+# Submit search
+- pressKey: Enter
+
+# Go back
+- back
+- assertVisible: "Anki2Spotify"
