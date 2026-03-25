@@ -18,7 +18,7 @@ appId: host.exp.exponent
     point: "50%,79%"
     optional: true
 
-- assertVisible: "Anki2Spotify"
+- assertVisible: "Lyrideck"
 
 # Enter the first deck
 - tapOn:
@@ -95,4 +95,4 @@ appId: host.exp.exponent
 
 # Back to home
 - back
-- assertVisible: "Anki2Spotify"
+- assertVisible: "Lyrideck"

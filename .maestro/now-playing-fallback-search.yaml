@@ -19,7 +19,7 @@ appId: host.exp.exponent
     point: "50%,79%"
     optional: true
 
-- assertVisible: "Anki2Spotify"
+- assertVisible: "LyriDeck"
 
 # Navigate to Now Playing
 - tapOn:
@@ -54,4 +54,4 @@ appId: host.exp.exponent
 
 # Go back
 - back
-- assertVisible: "Anki2Spotify"
+- assertVisible: "LyriDeck"

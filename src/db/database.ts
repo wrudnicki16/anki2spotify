@@ -6,7 +6,7 @@ let db: SQLite.SQLiteDatabase;
 
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (!db) {
-    db = await SQLite.openDatabaseAsync('anki2spotify.db');
+    db = await SQLite.openDatabaseAsync('lyrideck.db');
     await initDatabase(db);
   }
   return db;

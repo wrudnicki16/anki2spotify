@@ -190,7 +190,7 @@ export default function DeckImportScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
-        <Text style={styles.header}>Anki2Spotify</Text>
+        <Text style={styles.header}>LyriDeck</Text>
         <Pressable
           style={styles.nowPlayingButton}
           onPress={() => navigation.navigate('TrackSearchResults')}

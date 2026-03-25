@@ -488,14 +488,14 @@ The DeckImportScreen doesn't have access to `accessToken`. Since the auth bar in
 In `DeckImportScreen.tsx`, find the header section (line 188):
 
 ```typescript
-<Text style={styles.header}>Anki2Spotify</Text>
+<Text style={styles.header}>LyriDeck</Text>
 ```
 
 Replace with:
 
 ```typescript
       <View style={styles.titleRow}>
-        <Text style={styles.header}>Anki2Spotify</Text>
+        <Text style={styles.header}>LyriDeck</Text>
         <Pressable
           style={styles.nowPlayingButton}
           onPress={() => navigation.navigate('TrackSearchResults')}

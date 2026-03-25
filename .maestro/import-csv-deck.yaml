@@ -20,7 +20,7 @@ appId: host.exp.exponent
     optional: true
 
 # Assert DeckImportScreen initial state
-- assertVisible: "Anki2Spotify"
+- assertVisible: "LyriDeck"
 - assertVisible: "No decks yet. Import a file to get started."
 
 # Tap Import Deck → file picker opens

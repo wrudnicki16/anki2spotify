@@ -19,7 +19,7 @@ appId: host.exp.exponent
     point: "50%,79%"
     optional: true
 
-- assertVisible: "Anki2Spotify"
+- assertVisible: "Lyrideck"
 
 # Enter first deck
 - tapOn:
@@ -58,7 +58,7 @@ appId: host.exp.exponent
 # Go back to decks
 - tapOn:
     id: "back-to-decks"
-- assertVisible: "Anki2Spotify"
+- assertVisible: "LyriDeck"
 
 # --- Play a song from the created playlist via Spotify ---
 

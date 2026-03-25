@@ -68,4 +68,4 @@ appId: host.exp.exponent
     id: "back-to-decks"
 
 # Assert back on DeckImportScreen
-- assertVisible: "Anki2Spotify"
+- assertVisible: "LyriDeck"

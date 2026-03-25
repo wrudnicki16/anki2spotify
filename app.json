@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "anki2spotify",
-    "slug": "anki2spotify",
-    "scheme": "anki2spotify",
+    "name": "lyrideck",
+    "slug": "lyrideck",
+    "scheme": "lyrideck",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.anki2spotify"
+      "package": "com.wyattrudnicki.lyrideck"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -36,7 +36,7 @@
         {
           "url": "https://sentry.io",
           "organization": "wyatt-rudnicki",
-          "project": "anki2spotify-react-native"
+          "project": "lyrideck-react-native"
         }
       ]
     ]

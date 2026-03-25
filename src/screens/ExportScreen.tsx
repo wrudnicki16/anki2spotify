@@ -63,7 +63,7 @@ export default function ExportScreen({ route }: any) {
       if (canShare) {
         await Sharing.shareAsync(file.uri, {
           mimeType: 'text/csv',
-          dialogTitle: 'Export Anki2Spotify Data',
+          dialogTitle: 'Export LyriDeck Data',
         });
       } else {
         Alert.alert('Exported', `File saved to:\n${file.uri}`);

@@ -19,7 +19,7 @@ appId: host.exp.exponent
     point: "50%,79%"
     optional: true
 
-- assertVisible: "Anki2Spotify"
+- assertVisible: "LyriDeck"
 
 # Tap Now Playing from home screen
 - tapOn:

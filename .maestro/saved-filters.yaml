@@ -10,7 +10,7 @@ appId: host.exp.exponent
     timeout: 30000
 - openLink: "${EXPO_URL}"
 
-- assertVisible: "Anki2Spotify"
+- assertVisible: "Lyrideck"
 
 # Enter first deck
 - tapOn:
@@ -34,7 +34,7 @@ appId: host.exp.exponent
 
 # Go back to deck list
 - back
-- assertVisible: "Anki2Spotify"
+- assertVisible: "LyriDeck"
 
 # Re-enter the same deck
 - tapOn:

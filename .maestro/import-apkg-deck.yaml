@@ -8,7 +8,7 @@ appId: host.exp.exponent
 - openLink: "${EXPO_URL}"
 
 # Assert DeckImportScreen
-- assertVisible: "Anki2Spotify"
+- assertVisible: "LyriDeck"
 - assertVisible: "Import Deck"
 
 # Tap Import Deck → opens OS file picker

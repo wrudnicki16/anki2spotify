@@ -1,5 +1,5 @@
 {
-  "name": "anki2spotify",
+  "name": "lyrideck",
   "version": "1.0.0",
   "main": "index.ts",
   "scripts": {
