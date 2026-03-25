@@ -1,4 +1,4 @@
-# Lyrideck
+# LyriDeck
 
 A React Native (Expo) app that bridges your Anki flashcard decks with Spotify. Import a deck, find songs that match each card's content, and save precise timestamps for where that word or phrase appears in the music. Works for both Free and Premium Spotify users.
 
