@@ -9,7 +9,7 @@
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/lyrideck-splash-icon.jpg",
+      "image": "./assets/lyrideck-splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#060a18"
     },
@@ -18,11 +18,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/lyrideck-icon.svg",
+        "foregroundImage": "./assets/lyrideck-icon.png",
         "backgroundColor": "#060a18"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
+      "versionCode": 1,
       "package": "com.wyattrudnicki.lyrideck"
     },
     "web": {
@@ -39,6 +40,11 @@
           "project": "lyrideck-react-native"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "df8cf26f-1131-449c-9c8e-6a068c357a1e"
+      }
+    }
   }
 }

@@ -17,7 +17,7 @@ export function useSpotifyAuth() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<number | null>(null);
 
-  const redirectUri = makeRedirectUri();
+  const redirectUri = makeRedirectUri({ path: 'callback' });
 
   const login = async () => {
     // Generate PKCE code verifier and challenge
