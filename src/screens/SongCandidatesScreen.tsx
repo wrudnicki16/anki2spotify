@@ -169,6 +169,8 @@ export default function SongCandidatesScreen({
           placeholderTextColor={colors.textMuted}
           onSubmitEditing={() => doSearch(query)}
           returnKeyType="search"
+          numberOfLines={1}
+          multiline={false}
           testID="input-search"
         />
       </View>
