@@ -81,10 +81,10 @@ appId: host.exp.exponent
       visible: "Select"
     commands:
       - tapOn:
-        id: "select-track"
-        index: 0
+          id: "select-track"
+          index: 0
       - tapOn:
-        id: "mark-at-zero"
+          id: "mark-at-zero"
 
 # Go back to deck list
 - back
