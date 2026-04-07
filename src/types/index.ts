@@ -57,7 +57,7 @@ export interface CardRow {
   back: string;
   tags: string;
   status: string;
-  manual_entry_id?: number | null;
+  manual_entry_id: number | null;
 }
 
 export interface DeckRow {

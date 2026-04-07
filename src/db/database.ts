@@ -507,9 +507,9 @@ export async function upsertManualEntry(entry: {
   title: string;
   url: string;
   notes: string;
-}): Promise<number> {
+}): Promise<void> {
   const database = await getDatabase();
-  const result = await database.runAsync(
+  await database.runAsync(
     `INSERT INTO manual_entries (card_id, title, url, notes, updated_at)
      VALUES (?, ?, ?, ?, datetime('now'))
      ON CONFLICT(card_id) DO UPDATE SET
@@ -524,7 +524,6 @@ export async function upsertManualEntry(entry: {
     `UPDATE cards SET status = 'matched' WHERE id = ?`,
     entry.cardId
   );
-  return result.lastInsertRowId;
 }
 
 export async function getManualEntryForCard(
