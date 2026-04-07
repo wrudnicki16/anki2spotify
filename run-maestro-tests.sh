@@ -77,11 +77,13 @@ group_def() {
     playlist-new) echo "import-deck|playlist-creation" ;;
     manual-create) echo "|create-deck-manual,add-card-manual" ;;
     sample-deck)  echo "|sample-deck-seeded" ;;
+    manual-entry)         echo "|manual-entry-no-spotify,manual-entry-edit" ;;
+    manual-entry-spotify) echo "|manual-entry-with-spotify" ;;
     *) return 1 ;;
   esac
 }
 
-ALL_GROUPS="fresh-app navigation capture match skip playlist destructive now-playing now-playing-no-music filters playlist-new manual-create sample-deck"
+ALL_GROUPS="fresh-app navigation capture match skip playlist destructive now-playing now-playing-no-music filters playlist-new manual-create sample-deck manual-entry manual-entry-spotify"
 
 # ── Helpers ──
 

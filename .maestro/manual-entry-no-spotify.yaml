@@ -1,0 +1,59 @@
+appId: host.exp.exponent
+---
+
+# Manual Entry (no Spotify) - On a fresh app, manually enter a song for a card
+# Sample deck is auto-seeded when there are no decks, so no import setup needed.
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Dismiss Expo Go developer menu
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 5000
+    optional: true
+- tapOn:
+    point: "90%,35%"
+    optional: true
+
+- assertVisible: "LyriDeck"
+
+# Open the auto-seeded sample deck
+- assertVisible: "Sample Deck — Spanish"
+- tapOn: "Sample Deck — Spanish"
+
+# Tap the first pending card
+- assertVisible: "Hola"
+- tapOn:
+    id: "card-item"
+    index: 0
+
+# Manual entry form should be visible (no Spotify token, no "Please log in" message)
+- extendedWaitUntil:
+    visible:
+      id: "input-manual-title"
+    timeout: 5000
+
+# Type a title
+- tapOn:
+    id: "input-manual-title"
+- inputText: "Despacito"
+
+# Save
+- tapOn:
+    id: "save-manual-btn"
+
+# Back on the deck — the card should now be matched
+- assertVisible: "Hola"
+
+# Tap the same card to edit — should land on Manual Entry screen
+- tapOn:
+    id: "card-item"
+    index: 0
+- assertVisible: "Manual Entry"
+
+# Form should be pre-filled
+- assertVisible: "Despacito"

@@ -1,0 +1,84 @@
+appId: host.exp.exponent
+---
+
+# Manual Entry (Spotify connected) - Switch to manual mode from search,
+# fill title + link + note, save.
+#
+# PRECONDITION: Spotify must already be authenticated from a prior session.
+# Auth cannot be automated by Maestro (it requires entering credentials in a
+# WebBrowser). Connect Spotify manually before running this test, or run after
+# any other Spotify-dependent test in the same suite.
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Dismiss Expo Go developer menu
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 5000
+    optional: true
+- tapOn:
+    point: "90%,35%"
+    optional: true
+
+# Connect Spotify (relies on auth persistence from the test session)
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+
+- assertVisible: "Spotify Connected"
+
+# Open the sample deck
+- tapOn: "Sample Deck — Spanish"
+- tapOn:
+    id: "card-item"
+    index: 0
+
+# In search mode — search input should be visible
+- extendedWaitUntil:
+    visible:
+      id: "input-search"
+    timeout: 5000
+
+# Switch to manual mode
+- tapOn:
+    id: "enter-manually-btn"
+
+# Manual form is now visible
+- extendedWaitUntil:
+    visible:
+      id: "input-manual-title"
+    timeout: 5000
+
+# Type a title
+- tapOn:
+    id: "input-manual-title"
+- inputText: "Despacito"
+
+# Type a link → open icon should appear
+- tapOn:
+    id: "input-manual-link"
+- inputText: "https://youtu.be/kJQP7kiw5Fk"
+- assertVisible:
+    id: "open-manual-link"
+
+# Add a note
+- tapOn:
+    id: "add-note-btn"
+- tapOn:
+    id: "input-manual-notes"
+- inputText: "feat Daddy Yankee"
+
+# Save
+- tapOn:
+    id: "save-manual-btn"
+
+# Back on the deck — card matched
+- assertVisible: "Hola"

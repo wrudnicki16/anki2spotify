@@ -1,0 +1,62 @@
+appId: host.exp.exponent
+---
+
+# Manual Entry Edit - Create an entry, edit it, verify the update persists.
+# Inline create steps (rather than a setup flow) since they're only used here.
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Dismiss Expo Go developer menu
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 5000
+    optional: true
+- tapOn:
+    point: "90%,35%"
+    optional: true
+
+- assertVisible: "LyriDeck"
+
+# --- Inline create ---
+- tapOn: "Sample Deck — Spanish"
+- tapOn:
+    id: "card-item"
+    index: 0
+- extendedWaitUntil:
+    visible:
+      id: "input-manual-title"
+    timeout: 5000
+- tapOn:
+    id: "input-manual-title"
+- inputText: "Despacito"
+- tapOn:
+    id: "save-manual-btn"
+
+# --- Edit ---
+# Tap the same card again
+- tapOn:
+    id: "card-item"
+    index: 0
+- assertVisible: "Manual Entry"
+- assertVisible: "Despacito"
+
+# Clear and type a new title
+- tapOn:
+    id: "input-manual-title"
+- eraseText: 10
+- inputText: "Macarena"
+
+# Save
+- tapOn:
+    id: "save-manual-btn"
+
+# Back on deck. Re-tap and verify the new title.
+- tapOn:
+    id: "card-item"
+    index: 0
+- assertVisible: "Manual Entry"
+- assertVisible: "Macarena"
