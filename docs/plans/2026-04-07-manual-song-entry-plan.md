@@ -279,12 +279,15 @@ git commit -m "Add manual_entries table and DB layer"
 
 ---
 
-### Task 2: `ManualEntryForm` shared component
+### Task 2: `ManualEntryForm` shared component (with unit tests)
 
 **Files:**
 - Create: `src/components/ManualEntryForm.tsx`
+- Create: `src/components/ManualEntryForm.test.tsx`
 
-- [ ] **Step 1: Create the file**
+The form is pure: it takes an `onSave` callback and an `onCancel` callback. It does NOT call the database or know about `cardId` — parents handle persistence. This matches the callback-based pattern used by `ConfirmationModal` and keeps the form trivially unit-testable.
+
+- [ ] **Step 1: Create `ManualEntryForm.tsx`**
 
 Write the entire file:
 
@@ -300,21 +303,18 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
-import { upsertManualEntry } from '../db/database';
 
 interface ManualEntryFormProps {
-  cardId: number;
   initial?: { title: string; url: string; notes: string };
-  onSaved: () => void;
+  onSave: (data: { title: string; url: string; notes: string }) => Promise<void>;
   onCancel: () => void;
 }
 
 const URL_REGEX = /^(https?:\/\/|spotify:)/i;
 
 export default function ManualEntryForm({
-  cardId,
   initial,
-  onSaved,
+  onSave,
   onCancel,
 }: ManualEntryFormProps) {
   const [title, setTitle] = useState(initial?.title ?? '');
@@ -333,13 +333,11 @@ export default function ManualEntryForm({
     if (!canSave) return;
     setSaving(true);
     try {
-      await upsertManualEntry({
-        cardId,
+      await onSave({
         title: title.trim(),
         url: url.trim(),
         notes: notes.trim(),
       });
-      onSaved();
     } finally {
       setSaving(false);
     }
@@ -509,17 +507,196 @@ const styles = StyleSheet.create({
 });
 ```
 
-- [ ] **Step 2: Verify the file compiles**
+- [ ] **Step 2: Create `ManualEntryForm.test.tsx`**
+
+Write the entire file:
+
+```typescript
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import ManualEntryForm from './ManualEntryForm';
+
+describe('ManualEntryForm', () => {
+  it('renders title and link inputs with + Add note button', () => {
+    const { getByTestId, queryByTestId } = render(
+      <ManualEntryForm onSave={jest.fn()} onCancel={jest.fn()} />
+    );
+    expect(getByTestId('input-manual-title')).toBeTruthy();
+    expect(getByTestId('input-manual-link')).toBeTruthy();
+    expect(getByTestId('add-note-btn')).toBeTruthy();
+    expect(queryByTestId('input-manual-notes')).toBeNull();
+  });
+
+  it('reveals notes textarea when + Add note pressed', () => {
+    const { getByTestId, queryByTestId } = render(
+      <ManualEntryForm onSave={jest.fn()} onCancel={jest.fn()} />
+    );
+    fireEvent.press(getByTestId('add-note-btn'));
+    expect(getByTestId('input-manual-notes')).toBeTruthy();
+    expect(queryByTestId('add-note-btn')).toBeNull();
+  });
+
+  it('pre-fills fields from initial prop', () => {
+    const { getByTestId } = render(
+      <ManualEntryForm
+        initial={{ title: 'Despacito', url: 'https://foo', notes: '' }}
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+      />
+    );
+    expect(getByTestId('input-manual-title').props.value).toBe('Despacito');
+    expect(getByTestId('input-manual-link').props.value).toBe('https://foo');
+  });
+
+  it('shows notes expanded when initial.notes is non-empty', () => {
+    const { getByTestId, queryByTestId } = render(
+      <ManualEntryForm
+        initial={{ title: '', url: '', notes: 'some note' }}
+        onSave={jest.fn()}
+        onCancel={jest.fn()}
+      />
+    );
+    expect(getByTestId('input-manual-notes').props.value).toBe('some note');
+    expect(queryByTestId('add-note-btn')).toBeNull();
+  });
+
+  it('disables Save when both title and link are empty', () => {
+    const onSave = jest.fn();
+    const { getByTestId } = render(
+      <ManualEntryForm onSave={onSave} onCancel={jest.fn()} />
+    );
+    fireEvent.press(getByTestId('save-manual-btn'));
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('disables Save when title and link are whitespace only', () => {
+    const onSave = jest.fn();
+    const { getByTestId } = render(
+      <ManualEntryForm
+        initial={{ title: '   ', url: '  ', notes: '' }}
+        onSave={onSave}
+        onCancel={jest.fn()}
+      />
+    );
+    fireEvent.press(getByTestId('save-manual-btn'));
+    expect(onSave).not.toHaveBeenCalled();
+  });
+
+  it('enables Save when only title is provided', async () => {
+    const onSave = jest.fn().mockResolvedValue(undefined);
+    const { getByTestId } = render(
+      <ManualEntryForm onSave={onSave} onCancel={jest.fn()} />
+    );
+    fireEvent.changeText(getByTestId('input-manual-title'), 'Despacito');
+    fireEvent.press(getByTestId('save-manual-btn'));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect(onSave).toHaveBeenCalledWith({
+      title: 'Despacito',
+      url: '',
+      notes: '',
+    });
+  });
+
+  it('enables Save when only link is provided', async () => {
+    const onSave = jest.fn().mockResolvedValue(undefined);
+    const { getByTestId } = render(
+      <ManualEntryForm onSave={onSave} onCancel={jest.fn()} />
+    );
+    fireEvent.changeText(getByTestId('input-manual-link'), 'https://foo');
+    fireEvent.press(getByTestId('save-manual-btn'));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect(onSave).toHaveBeenCalledWith({
+      title: '',
+      url: 'https://foo',
+      notes: '',
+    });
+  });
+
+  it('trims whitespace from title, url, and notes when saving', async () => {
+    const onSave = jest.fn().mockResolvedValue(undefined);
+    const { getByTestId } = render(
+      <ManualEntryForm onSave={onSave} onCancel={jest.fn()} />
+    );
+    fireEvent.changeText(getByTestId('input-manual-title'), '  Despacito  ');
+    fireEvent.changeText(getByTestId('input-manual-link'), '  https://foo  ');
+    fireEvent.press(getByTestId('add-note-btn'));
+    fireEvent.changeText(getByTestId('input-manual-notes'), '  a note  ');
+    fireEvent.press(getByTestId('save-manual-btn'));
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    expect(onSave).toHaveBeenCalledWith({
+      title: 'Despacito',
+      url: 'https://foo',
+      notes: 'a note',
+    });
+  });
+
+  it('calls onCancel when Cancel pressed', () => {
+    const onCancel = jest.fn();
+    const { getByTestId } = render(
+      <ManualEntryForm onSave={jest.fn()} onCancel={onCancel} />
+    );
+    fireEvent.press(getByTestId('cancel-manual-btn'));
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides open-link icon when link is empty', () => {
+    const { queryByTestId } = render(
+      <ManualEntryForm onSave={jest.fn()} onCancel={jest.fn()} />
+    );
+    expect(queryByTestId('open-manual-link')).toBeNull();
+  });
+
+  it('hides open-link icon when link is plain text', () => {
+    const { getByTestId, queryByTestId } = render(
+      <ManualEntryForm onSave={jest.fn()} onCancel={jest.fn()} />
+    );
+    fireEvent.changeText(getByTestId('input-manual-link'), 'not a url');
+    expect(queryByTestId('open-manual-link')).toBeNull();
+  });
+
+  it('shows open-link icon for https URL', () => {
+    const { getByTestId } = render(
+      <ManualEntryForm onSave={jest.fn()} onCancel={jest.fn()} />
+    );
+    fireEvent.changeText(
+      getByTestId('input-manual-link'),
+      'https://youtu.be/abc'
+    );
+    expect(getByTestId('open-manual-link')).toBeTruthy();
+  });
+
+  it('shows open-link icon for spotify: URI', () => {
+    const { getByTestId } = render(
+      <ManualEntryForm onSave={jest.fn()} onCancel={jest.fn()} />
+    );
+    fireEvent.changeText(
+      getByTestId('input-manual-link'),
+      'spotify:track:abc'
+    );
+    expect(getByTestId('open-manual-link')).toBeTruthy();
+  });
+});
+```
+
+- [ ] **Step 3: Run the tests**
+
+```bash
+npm test -- ManualEntryForm
+```
+
+Expected: 14/14 tests passing.
+
+- [ ] **Step 4: Verify the file compiles**
 
 ```bash
 npx tsc --noEmit
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add src/components/ManualEntryForm.tsx
-git commit -m "Add ManualEntryForm shared component"
+git add src/components/ManualEntryForm.tsx src/components/ManualEntryForm.test.tsx
+git commit -m "Add ManualEntryForm shared component with unit tests"
 ```
 
 ---
@@ -536,7 +713,7 @@ git commit -m "Add ManualEntryForm shared component"
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import { colors } from '../constants/colors';
-import { getManualEntryForCard } from '../db/database';
+import { getManualEntryForCard, upsertManualEntry } from '../db/database';
 import ManualEntryForm from '../components/ManualEntryForm';
 import { ManualEntry } from '../types';
 
@@ -597,6 +774,16 @@ export default function ManualEntryScreen({
     }
   }, [accessToken, navigation, cardId, cardFront, cardBack, searchField]);
 
+  const handleSave = async (data: { title: string; url: string; notes: string }) => {
+    await upsertManualEntry({
+      cardId,
+      title: data.title,
+      url: data.url,
+      notes: data.notes,
+    });
+    navigation.goBack();
+  };
+
   if (loading) {
     return (
       <View style={styles.centered}>
@@ -613,13 +800,12 @@ export default function ManualEntryScreen({
       </View>
 
       <ManualEntryForm
-        cardId={cardId}
         initial={
           entry
             ? { title: entry.title, url: entry.url, notes: entry.notes }
             : undefined
         }
-        onSaved={() => navigation.goBack()}
+        onSave={handleSave}
         onCancel={() => navigation.goBack()}
       />
     </View>
@@ -711,12 +897,18 @@ git commit -m "Add ManualEntryScreen and register in navigator"
 **Files:**
 - Modify: `src/screens/SongCandidatesScreen.tsx`
 
-- [ ] **Step 1: Add the new import**
+- [ ] **Step 1: Add the new imports**
 
 In `src/screens/SongCandidatesScreen.tsx`, add after the existing component imports (after line 16, before the `interface Props`):
 
 ```typescript
 import ManualEntryForm from '../components/ManualEntryForm';
+```
+
+Also update the existing `database` import (currently line 15) to include `upsertManualEntry`:
+
+```typescript
+import { getTracksWithClipsForCard, updateCardStatus, getNextPendingCard, getPendingCardCount, upsertManualEntry } from '../db/database';
 ```
 
 - [ ] **Step 2: Add `manualMode` state**
@@ -767,8 +959,13 @@ Replace the entire return block with:
 
       {manualMode ? (
         <ManualEntryForm
-          cardId={cardId}
-          onSaved={async () => {
+          onSave={async (data) => {
+            await upsertManualEntry({
+              cardId,
+              title: data.title,
+              url: data.url,
+              notes: data.notes,
+            });
             if (reviewMode) {
               await advanceToNext();
             } else {
@@ -1791,4 +1988,9 @@ After all 9 tasks, the feature is complete:
 - CSV export includes them in dedicated columns
 - E2E tests cover the core flows
 
-The plan is intentionally TDD-light because the project has no Jest setup. Each task ends with a `npx tsc --noEmit` type check (where applicable) and a commit. Smoke testing is consolidated in Task 9.
+The project has both Jest (`jest-expo` preset) and Maestro. Per the existing convention:
+- Pure components (e.g., `ConfirmationModal`, `FilterPill`) have Jest unit tests — so does the new `ManualEntryForm` (Task 2).
+- The DB layer is NOT unit-tested (the `expo-sqlite` mock is too minimal to exercise real queries meaningfully).
+- End-to-end coverage goes through Maestro flows (Task 8).
+
+Each task ends with `npx tsc --noEmit` (where applicable) and a commit. Smoke testing is consolidated in Task 9.

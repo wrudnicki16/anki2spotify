@@ -59,14 +59,13 @@ The disabled-Save behavior is the only signal that one of title/link is required
 **Props:**
 ```ts
 interface ManualEntryFormProps {
-  cardId: number;
   initial?: { title: string; url: string; notes: string };
-  onSaved: () => void;
+  onSave: (data: { title: string; url: string; notes: string }) => Promise<void>;
   onCancel: () => void;
 }
 ```
 
-The component owns its own state and handles the upsert. It does NOT know about navigation, review mode, `accessToken`, or whether it's a new vs existing entry — that's all decided by the parent via callbacks. The "Spotify" header right button on `ManualEntryScreen` is rendered by *the screen*, not by `ManualEntryForm`, since the form is navigation-agnostic.
+The component owns its own local state (title, url, notes, notesVisible, saving) but is otherwise pure: it does NOT call the database, navigate, or know about `cardId`, `accessToken`, or review mode. On Save, it invokes `onSave(data)` and the parent is responsible for persisting via `upsertManualEntry` and handling post-save navigation. This matches the callback-based pattern used by `ConfirmationModal`, keeps the form trivially unit-testable, and lets both parent screens (`SongCandidatesScreen`, `ManualEntryScreen`) own their own navigation logic. The "Spotify" header right button on `ManualEntryScreen` is rendered by *the screen*, not by `ManualEntryForm`.
 
 ## Data Model
 
@@ -318,9 +317,28 @@ Each row populates either the Spotify columns (4–10) or the manual columns (11
 
 ## Testing
 
-All testing is via Maestro flows in `.maestro/`. No unit tests (no Jest setup in this project).
+The project has both Jest (via `jest-expo`) for unit/component tests and Maestro for end-to-end flows. Existing tests live at:
+- `src/utils/*.test.ts` — pure utilities
+- `src/components/*.test.tsx` — visual components (e.g., `ConfirmationModal.test.tsx`, `FilterPill.test.tsx`)
+- `.maestro/*.yaml` — end-to-end flows
 
-### New flows
+The DB layer is NOT unit-tested (the `expo-sqlite` mock is too minimal to exercise queries meaningfully). New tests for this feature match the existing pattern: the `ManualEntryForm` component gets a Jest unit test; the DB layer does not.
+
+### New unit test
+
+**`src/components/ManualEntryForm.test.tsx`** covers:
+- Renders title and link inputs, hides notes initially, shows `+ Add note` button
+- Tapping `+ Add note` reveals the notes textarea and hides the button
+- Pre-fills from `initial` when provided; shows notes expanded if `initial.notes` is non-empty
+- Save button is disabled when both title and link are empty (or whitespace-only)
+- Save button is enabled when title has content
+- Save button is enabled when link has content
+- Pressing Save calls `onSave` with trimmed title/url/notes
+- Pressing Cancel calls `onCancel`
+- Open-link icon is hidden when link field doesn't look like a URL
+- Open-link icon is visible when link starts with `https://`, `http://`, or `spotify:`
+
+### New Maestro flows
 
 **`.maestro/manual-entry-no-spotify.yaml`** (group: `manual-entry`)
 - Launch app, dismiss dev menu (`90%,35%` coordinate), tap into the seeded sample deck
@@ -353,7 +371,7 @@ Both added to `ALL_GROUPS`. The Spotify variant has no setup flow — it relies 
 
 ### What's NOT tested
 
-- Unit tests for new DB functions (no Jest in this project)
+- Unit tests for new DB functions (the project's `expo-sqlite` mock is too minimal to exercise real queries; existing convention doesn't unit-test the DB layer)
 - CSV column structure (hard to assert file contents in Maestro)
 - The `clearOtherMatchSources` helper directly (exercised indirectly by future switch-to-spotify flow)
 - The `spotifyEligibleCount === 0` early-block in `handleCreatePlaylist`
@@ -362,6 +380,7 @@ Both added to `ALL_GROUPS`. The Spotify variant has no setup flow — it relies 
 
 **New files:**
 - `src/components/ManualEntryForm.tsx` — shared form component
+- `src/components/ManualEntryForm.test.tsx` — Jest unit tests for the form
 - `src/screens/ManualEntryScreen.tsx` — edit screen for existing manual entries
 - `.maestro/manual-entry-no-spotify.yaml`
 - `.maestro/manual-entry-edit.yaml`
