@@ -236,6 +236,15 @@ export default function CardQueueScreen({ route, navigation }: any) {
               testID="card-item"
               onPress={async () => {
                 if (item.status === 'matched') {
+                  if (item.manual_entry_id) {
+                    navigation.navigate('ManualEntry', {
+                      cardId: item.id,
+                      cardFront: item.front,
+                      cardBack: item.back,
+                      searchField,
+                    });
+                    return;
+                  }
                   const row = await getTrackForCard(item.id);
                   if (row) {
                     navigation.navigate('Capture', {
@@ -272,12 +281,21 @@ export default function CardQueueScreen({ route, navigation }: any) {
                   {item.back}
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.statusDot,
-                  { backgroundColor: statusColor(item.status) },
-                ]}
-              />
+              {item.status === 'matched' && item.manual_entry_id ? (
+                <Ionicons
+                  name="link-outline"
+                  size={14}
+                  color={colors.primary}
+                  style={styles.statusIcon}
+                />
+              ) : (
+                <View
+                  style={[
+                    styles.statusDot,
+                    { backgroundColor: statusColor(item.status) },
+                  ]}
+                />
+              )}
             </Pressable>
           )}
         />
@@ -436,6 +454,9 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
+    marginLeft: 10,
+  },
+  statusIcon: {
     marginLeft: 10,
   },
   playlistButton: {
