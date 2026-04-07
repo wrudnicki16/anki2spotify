@@ -218,7 +218,7 @@ One new `Stack.Screen`:
 ### `CardQueueScreen` changes
 
 **Tap handler logic** (in order):
-1. If `status === 'matched'` AND `item.manual_entry_id` is truthy → navigate to `ManualEntry` with `{ cardId, cardFront, cardBack, manualEntryId, searchField }` and return
+1. If `status === 'matched'` AND `item.manual_entry_id` is truthy → navigate to `ManualEntry` with `{ cardId, cardFront, cardBack, searchField }` and return
 2. Else if `status === 'matched'` → fetch track via `getTrackForCard` → navigate to `Capture` (existing behavior)
 3. Else → navigate to `SongCandidates` (existing behavior)
 
