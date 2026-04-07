@@ -7,6 +7,7 @@ import CaptureScreen from '../screens/CaptureScreen';
 import ExportScreen from '../screens/ExportScreen';
 import PlaylistProgressScreen from '../screens/PlaylistProgressScreen';
 import TrackSearchResultsScreen from '../screens/TrackSearchResultsScreen';
+import ManualEntryScreen from '../screens/ManualEntryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -67,6 +68,14 @@ export default function AppNavigator({ accessToken, isPremium }: Props) {
       >
         {(props: any) => (
           <TrackSearchResultsScreen {...props} accessToken={accessToken} isPremium={isPremium} />
+        )}
+      </Stack.Screen>
+      <Stack.Screen
+        name="ManualEntry"
+        options={{ title: 'Manual Entry' }}
+      >
+        {(props: any) => (
+          <ManualEntryScreen {...props} accessToken={accessToken} />
         )}
       </Stack.Screen>
     </Stack.Navigator>
