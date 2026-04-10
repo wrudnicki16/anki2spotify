@@ -57,6 +57,10 @@ appId: host.exp.exponent
       id: "input-manual-title"
     timeout: 5000
 
+# Add a note (do this BEFORE typing title/link to avoid clipboard suggestion bar overlap)
+- tapOn:
+    id: "add-note-btn"
+
 # Type a title
 - tapOn:
     id: "input-manual-title"
@@ -69,9 +73,6 @@ appId: host.exp.exponent
 - assertVisible:
     id: "open-manual-link"
 
-# Add a note
-- tapOn:
-    id: "add-note-btn"
 - tapOn:
     id: "input-manual-notes"
 - inputText: "feat Daddy Yankee"

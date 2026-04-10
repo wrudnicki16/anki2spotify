@@ -78,7 +78,7 @@ group_def() {
     manual-create) echo "|create-deck-manual,add-card-manual" ;;
     sample-deck)  echo "|sample-deck-seeded" ;;
     manual-entry)         echo "|manual-entry-no-spotify,manual-entry-edit" ;;
-    manual-entry-spotify) echo "|manual-entry-with-spotify" ;;
+    manual-entry-spotify) echo "|manual-entry-with-spotify,manual-entry-cancel,manual-entry-spotify-header,manual-entry-switch-to-spotify" ;;
     *) return 1 ;;
   esac
 }

@@ -1,0 +1,79 @@
+appId: host.exp.exponent
+---
+
+# Manual Entry Switch to Spotify - Create a manual entry, then use the Spotify header
+# button on ManualEntryScreen to navigate to Find Songs for a Spotify search instead.
+#
+# PRECONDITION: Spotify must already be authenticated from a prior session.
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Dismiss Expo Go developer menu
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 5000
+    optional: true
+- tapOn:
+    point: "90%,35%"
+    optional: true
+
+# Connect Spotify
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+- assertVisible: "Spotify Connected"
+
+# Open sample deck and tap a pending card (index 2 to avoid conflicts with prior tests)
+- tapOn: "Sample Deck \u2014 Spanish"
+- tapOn:
+    id: "card-item"
+    index: 2
+
+# In search mode — switch to manual and save an entry
+- extendedWaitUntil:
+    visible:
+      id: "input-search"
+    timeout: 5000
+- tapOn:
+    id: "enter-manually-btn"
+- extendedWaitUntil:
+    visible:
+      id: "input-manual-title"
+    timeout: 5000
+- tapOn:
+    id: "input-manual-title"
+- inputText: "Test Song"
+- tapOn:
+    id: "save-manual-btn"
+
+# Back on deck — tap the same card (now matched with manual entry)
+- waitForAnimationToEnd:
+    timeout: 1000
+- tapOn:
+    id: "card-item"
+    index: 2
+
+# Should be on ManualEntry screen with the saved title
+- assertVisible: "Manual Entry"
+- assertVisible: "Test Song"
+
+# Verify Spotify header button exists
+- assertVisible:
+    id: "header-spotify-btn"
+
+# Tap it — should navigate to Find Songs
+- tapOn:
+    id: "header-spotify-btn"
+
+# Should be on Find Songs with search input visible
+- assertVisible: "Find Songs"
+- assertVisible:
+    id: "input-search"

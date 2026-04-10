@@ -1,0 +1,66 @@
+appId: host.exp.exponent
+---
+
+# Manual Entry Cancel - Verify Cancel button exits manual mode and returns to search
+#
+# PRECONDITION: Spotify must already be authenticated from a prior session.
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Dismiss Expo Go developer menu
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 5000
+    optional: true
+- tapOn:
+    point: "90%,35%"
+    optional: true
+
+# Connect Spotify
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+- assertVisible: "Spotify Connected"
+
+# Open sample deck and tap a pending card (index 1 to avoid conflicts with prior tests)
+- tapOn: "Sample Deck \u2014 Spanish"
+- tapOn:
+    id: "card-item"
+    index: 1
+
+# Should be in search mode with search input visible
+- extendedWaitUntil:
+    visible:
+      id: "input-search"
+    timeout: 5000
+
+# Switch to manual mode
+- tapOn:
+    id: "enter-manually-btn"
+
+# Manual form should be visible
+- extendedWaitUntil:
+    visible:
+      id: "input-manual-title"
+    timeout: 5000
+
+# Type something (to verify it gets discarded on cancel)
+- tapOn:
+    id: "input-manual-title"
+- inputText: "Should be discarded"
+
+# Tap Cancel
+- tapOn:
+    id: "cancel-manual-btn"
+
+# Should be back in search mode — search input visible again
+- assertVisible:
+    id: "input-search"

@@ -1,0 +1,65 @@
+appId: host.exp.exponent
+---
+
+# Manual Entry Spotify Header - Verify Spotify header button exits manual mode on Find Songs
+#
+# PRECONDITION: Spotify must already be authenticated from a prior session.
+
+- launchApp
+- extendedWaitUntil:
+    visible: "Expo Go"
+    timeout: 30000
+- openLink: "${EXPO_URL}"
+
+# Dismiss Expo Go developer menu
+- extendedWaitUntil:
+    visible: "Continue"
+    timeout: 5000
+    optional: true
+- tapOn:
+    point: "90%,35%"
+    optional: true
+
+# Connect Spotify
+- tapOn:
+    id: "connect-spotify"
+- waitForAnimationToEnd:
+    timeout: 2000
+- tapOn:
+    point: "50%,79%"
+    optional: true
+- assertVisible: "Spotify Connected"
+
+# Open sample deck and tap a pending card (index 1 — same card as cancel test, still pending)
+- tapOn: "Sample Deck \u2014 Spanish"
+- tapOn:
+    id: "card-item"
+    index: 1
+
+# Should be in search mode
+- extendedWaitUntil:
+    visible:
+      id: "input-search"
+    timeout: 5000
+
+# Switch to manual mode
+- tapOn:
+    id: "enter-manually-btn"
+
+# Manual form should be visible
+- extendedWaitUntil:
+    visible:
+      id: "input-manual-title"
+    timeout: 5000
+
+# Verify Spotify header button is visible
+- assertVisible:
+    id: "header-spotify-btn"
+
+# Tap the Spotify header button
+- tapOn:
+    id: "header-spotify-btn"
+
+# Should be back in search mode — search input visible again
+- assertVisible:
+    id: "input-search"
