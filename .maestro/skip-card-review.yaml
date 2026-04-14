@@ -45,4 +45,4 @@ appId: host.exp.exponent
     id: "skip-btn"
 
 # Should auto-advance to next pending card
-- assertVisible: "Search Spotify..."
+- assertVisible: "Find Songs"

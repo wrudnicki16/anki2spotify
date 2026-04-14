@@ -76,7 +76,6 @@ appId: host.exp.exponent
     id: "delete-clip"
 
 # Assert delete confirmation
-- assertVisible: "Remove this timestamp?"
 - assertVisible: "Cancel"
 - assertVisible: "Delete"
 

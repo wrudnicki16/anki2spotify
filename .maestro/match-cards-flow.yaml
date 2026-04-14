@@ -37,7 +37,7 @@ appId: host.exp.exponent
 
 # Assert SongCandidatesScreen opens in review mode
 - assertVisible: "^[0-9]+ cards? remaining"
-- assertVisible: "Search Spotify..."
+- assertVisible: "Find Songs"
 
 # Wait for results
 - extendedWaitUntil:
@@ -67,4 +67,4 @@ appId: host.exp.exponent
     id: "next-card"
 
 # Should auto-advance to next card's SongCandidatesScreen
-- assertVisible: "Search Spotify..."
+- assertVisible: "Find Songs"

@@ -39,7 +39,7 @@ appId: host.exp.exponent
     index: -1
 
 # Assert SongCandidatesScreen elements
-- assertVisible: "Search Spotify..."
+- assertVisible: "Find Songs"
 
 # Wait for search results
 - extendedWaitUntil:

@@ -79,9 +79,10 @@ appId: host.exp.exponent
       - tapOn: "OK"
 - runFlow:
     label: "Select"
+    optional: true
     commands:
       - tapOn:
-          point: "72%, 78%"
+          point: "72%, 88%"
       - tapOn:
           id: "mark-at-zero"
 

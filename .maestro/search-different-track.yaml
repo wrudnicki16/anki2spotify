@@ -65,7 +65,7 @@ appId: host.exp.exponent
     id: "search-different-track"
 
 # Assert back on SongCandidatesScreen
-- assertVisible: "Search Spotify..."
+- assertVisible: "Find Songs"
 
 # Modify search query
 - tapOn:
