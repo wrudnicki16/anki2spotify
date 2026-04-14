@@ -21,7 +21,9 @@ appId: host.exp.exponent
 
 # Assert DeckImportScreen initial state
 - assertVisible: "LyriDeck"
-- assertVisible: "No decks yet. Import a file to get started."
+
+# Sample deck is seeded, uncomment if needed again
+# - assertVisible: "No decks yet. Import a file to get started."
 
 # Tap Import Deck → file picker opens
 - tapOn:

@@ -29,6 +29,7 @@ appId: host.exp.exponent
 # there are no cards to create playlist from, dismiss alert
 # then unselect "Lyrics" filter and try again
 - runFlow:
+    label: "No Create Playlist"
     when:
       notVisible: "Create Playlist"
     commands:

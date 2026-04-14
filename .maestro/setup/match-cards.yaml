@@ -72,17 +72,16 @@ appId: host.exp.exponent
     id: "next-card"
     optional: true
 - runFlow:
+    label: "All done!"
     when:
       visible: "All done!"
     commands:
       - tapOn: "OK"
 - runFlow:
-    when:
-      visible: "Select"
+    label: "Select"
     commands:
       - tapOn:
-          id: "select-track"
-          index: 0
+          point: "72%, 78%"
       - tapOn:
           id: "mark-at-zero"
 

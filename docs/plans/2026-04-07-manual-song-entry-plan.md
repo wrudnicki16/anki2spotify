@@ -1474,7 +1474,7 @@ Replace the existing `exportCSV` function (lines 31-76) with:
 ```typescript
   const exportCSV = async () => {
     if (items.length === 0) {
-      Alert.alert('Nothing to export', 'No saved songs yet.');
+      Alert.alert('Nothing to export', 'No songs saved yet.');
       return;
     }
 

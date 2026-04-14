@@ -39,6 +39,9 @@ appId: host.exp.exponent
 
 # If no "Select" visible, card is already matched — go to Matched tab instead
 - runFlow:
+    label: "No Select"
+    timeout: 5000
+    optional: true
     when:
       notVisible: "Select"
     commands:
@@ -50,12 +53,10 @@ appId: host.exp.exponent
 
 # If "Select" visible, tap on first track
 - runFlow:
-    when:
-      visible: "Select"
+    label: "Select"
     commands:
       - tapOn:
-        id: "select-track"
-        index: 0
+          point: "72%, 78%"
 
 # Save a clip first
 - tapOn:

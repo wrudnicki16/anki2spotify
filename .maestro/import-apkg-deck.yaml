@@ -18,6 +18,7 @@ appId: host.exp.exponent
 # --- Platform-specific file picker interaction ---
 # Android: Try known document picker IDs (optional so iOS doesn't fail)
 - runFlow:
+    label: "Select APKG file"
     file: partials/select-apkg-file.yaml
     env:
       FILE_NAME: "test-deck"

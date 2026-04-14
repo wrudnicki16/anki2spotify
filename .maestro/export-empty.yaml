@@ -27,7 +27,7 @@ appId: host.exp.exponent
     id: "export-btn"
 
 # Assert ExportScreen with zero timestamps
-- assertVisible: "0 timestamps to export"
+- assertVisible: "0 entries to export"
 
 # Tap "Export CSV"
 - tapOn:
@@ -35,5 +35,5 @@ appId: host.exp.exponent
 
 # Assert "Nothing to export" alert
 - assertVisible: "Nothing to export"
-- assertVisible: "No timestamps saved yet."
+- assertVisible: "No songs saved yet."
 - tapOn: "OK"

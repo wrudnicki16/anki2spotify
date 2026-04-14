@@ -25,6 +25,7 @@ appId: host.exp.exponent
 
 # Android: select file from document picker (skipped on iOS)
 - runFlow:
+    label: "Select APKG file"
     file: ../partials/select-apkg-file.yaml
     env:
       FILE_NAME: "test-deck"

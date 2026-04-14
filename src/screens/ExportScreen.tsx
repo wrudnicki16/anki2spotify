@@ -48,7 +48,7 @@ export default function ExportScreen({ route }: any) {
 
   const exportCSV = async () => {
     if (items.length === 0) {
-      Alert.alert('Nothing to export', 'No saved songs yet.');
+      Alert.alert('Nothing to export', 'No songs saved yet.');
       return;
     }
 
